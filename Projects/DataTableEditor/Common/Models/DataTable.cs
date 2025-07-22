@@ -1,18 +1,19 @@
-﻿namespace Common.Models
+﻿using TSID.Creator.NET;
+
+namespace Common.Models
 {
-
-    public abstract class IDataTable<TColumn, TRow> 
-        where TColumn : IColumn 
-        where TRow : IRow
+    public class DataTable
     {
-        public required Guid Guid { get; init; }
+        public Tsid TSID { get; set; }
 
-        public required Version Version { get; init; }
+        public Version Version { get; set; } = new Version(1, 0, 0, 0);
 
-        public required string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
-        public List<TColumn> Columns { get; set; } = [];
-        
-        public List<TRow> Rows { get; set; } = [];
+        public DataTable()
+        {
+            TSID = TsidCreator.GetTsid();
+            Version = new Version(1, 0, 0, 0);
+        }
     }
 }
