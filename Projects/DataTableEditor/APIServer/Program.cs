@@ -1,4 +1,6 @@
 
+using Microsoft.AspNetCore.Builder;
+
 namespace APIServer
 {
     public class Program
@@ -13,13 +15,20 @@ namespace APIServer
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
 
+#if DEBUG
+            builder.Services.AddOpenApi();
+            builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddSwaggerGen();
+#endif
+
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
-                app.MapOpenApi();
-            }
+#if DEBUG
+            // Swagger : http://localhost:9101/swagger
+            app.MapOpenApi();
+            app.UseSwagger();
+            app.UseSwaggerUI();
+#endif
 
             app.UseHttpsRedirection();
 
