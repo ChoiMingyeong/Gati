@@ -1,4 +1,5 @@
-﻿using TSID.Creator.NET;
+﻿using System.Diagnostics.CodeAnalysis;
+using TSID.Creator.NET;
 
 namespace Common.Models
 {
@@ -11,6 +12,21 @@ namespace Common.Models
         public Project()
         {
             TSID = TsidCreator.GetTsid();
+        }
+
+        public List<DataTable> GetDataTables()
+        {
+            return [.. DataTables.Values];
+        }
+
+        public bool TryGetDataTable(Tsid tsid, [NotNullWhen(true)] out DataTable? dataTable)
+        {
+            if (DataTables.TryGetValue(tsid, out dataTable))
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }
