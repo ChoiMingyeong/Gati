@@ -1,6 +1,8 @@
-﻿using System.Collections.Concurrent;
+﻿using MemoryPack;
+using System.Collections.Concurrent;
 using System.Net;
 using System.Net.WebSockets;
+using TSID.Creator.NET;
 using WebCore.Shared;
 
 namespace WebCore.Server;
@@ -8,7 +10,7 @@ namespace WebCore.Server;
 public class WebSocketServer
 {
     private readonly HttpListener _listener = new();
-    private readonly ConcurrentDictionary<string, ClientSession> _clients = new();
+    private readonly ConcurrentDictionary<Tsid, ClientSession> _clients = new();
 
     public async Task StartAsync(string prefix = "http://localhost:8080/ws/")
     {
@@ -55,6 +57,14 @@ public class WebSocketServer
                 {
                     Console.WriteLine($"[패킷 수신] {packet.Opcode} ({packet.Payload.Length} bytes)");
 
+                    // 여기에서 payload를 역직렬화할 수 있음
+                    if (packet.Opcode == 1001)
+                    {
+                        var msg = MemoryPack.MemoryPackSerializer.Deserialize<ChatMessage>(packet.Payload);
+                        Console.WriteLine($"[채팅] {session.Id}: {msg.Message}");
+                        await SendToClient(session, packet.Opcode, msg);
+                    }
+
                     // TODO: PacketRouter.Handle(session, packet)
                 }
             }
@@ -69,5 +79,18 @@ public class WebSocketServer
             await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "서버 종료", CancellationToken.None);
             Console.WriteLine($"[연결 종료] {session.Id}");
         }
+    }
+
+    public async Task SendToClient<T>(ClientSession session, ushort opcode, T payload)
+    {
+        byte[] payloadBytes = MemoryPackSerializer.Serialize(payload);
+        var packet = new Packet { Opcode = opcode, Payload = payloadBytes };
+        byte[] raw = MemoryPackSerializer.Serialize(packet);
+
+        await session.Socket.SendAsync(
+            new ArraySegment<byte>(raw),
+            WebSocketMessageType.Binary,
+            true,
+            CancellationToken.None);
     }
 }

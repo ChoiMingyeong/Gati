@@ -1,11 +1,12 @@
 ﻿using System.Net.WebSockets;
+using TSID.Creator.NET;
 using WebCore.Shared;
 
 namespace WebCore.Server;
 
 public class ClientSession
 {
-    public string Id { get; } = Guid.NewGuid().ToString();
+    public Tsid Id { get; } = TsidCreator.GetTsid();
     public WebSocket Socket { get; }
     public DateTime ConnectedAt { get; } = DateTime.UtcNow;
 
