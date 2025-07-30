@@ -1,4 +1,6 @@
-﻿using System.Net.WebSockets;
+﻿using MemoryPack;
+using System;
+using System.Net.WebSockets;
 using TSID.Creator.NET;
 using WebCore.Shared;
 
@@ -15,11 +17,17 @@ public class ClientSession
         Socket = socket;
     }
 
-    public async Task SendAsync(Packet packet)
+    public async Task Send<TPacket> (TPacket packet) where TPacket : IPacket
     {
         byte[] raw = MemoryPack.MemoryPackSerializer.Serialize(packet);
+        var networkPacket = new NetworkPacket
+        {
+            Opcode = packet.GetOpcode(),
+            Payload = raw
+        };
+
         await Socket.SendAsync(
-            new ArraySegment<byte>(raw),
+            MemoryPackSerializer.Serialize(networkPacket),
             WebSocketMessageType.Binary,
             true,
             CancellationToken.None);

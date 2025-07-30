@@ -1,16 +1,24 @@
 ﻿using MemoryPack;
 using System.Collections.Concurrent;
 using System.Net;
+using System.Net.Sockets;
 using System.Net.WebSockets;
+using System.Reflection;
 using TSID.Creator.NET;
 using WebCore.Shared;
+using WebCore.Shared.C2S;
+using WebCore.Shared.S2C;
 
 namespace WebCore.Server;
 
-public class WebSocketServer
+public class ServerWebSocket
 {
     private readonly HttpListener _listener = new();
     private readonly ConcurrentDictionary<Tsid, ClientSession> _clients = new();
+
+    public ServerWebSocket()
+    {
+    }
 
     public async Task StartAsync(string prefix = "http://localhost:8080/ws/")
     {
@@ -31,6 +39,7 @@ public class WebSocketServer
             }
         }
     }
+
     private async Task HandleWebSocketAsync(HttpListenerContext context)
     {
         var wsContext = await context.AcceptWebSocketAsync(null);
@@ -52,20 +61,17 @@ public class WebSocketServer
                     break;
 
                 var rawData = new ReadOnlySpan<byte>(buffer, 0, result.Count);
-                var packet = MemoryPack.MemoryPackSerializer.Deserialize<Packet>(rawData);
-                if (packet != null)
+                if(MemoryPackSerializer.Deserialize<NetworkPacket>(rawData) is NetworkPacket networkPacket)
                 {
-                    Console.WriteLine($"[패킷 수신] {packet.Opcode} ({packet.Payload.Length} bytes)");
-
-                    // 여기에서 payload를 역직렬화할 수 있음
-                    if (packet.Opcode == 1001)
+                    if(networkPacket.Opcode == WebCore.Shared.C2S.Opcode.REQUEST_TEST)
                     {
-                        var msg = MemoryPack.MemoryPackSerializer.Deserialize<ChatMessage>(packet.Payload);
-                        Console.WriteLine($"[채팅] {session.Id}: {msg.Message}");
-                        await SendToClient(session, packet.Opcode, msg);
+                        if(MemoryPackSerializer.Deserialize<RequestTest>(networkPacket.Payload) is RequestTest request)
+                        {
+                            Console.WriteLine($"[요청] {session.Id} → {request.Message}");
+                            // Echo back the request
+                            await session.Send(new ResponseTest());
+                        }
                     }
-
-                    // TODO: PacketRouter.Handle(session, packet)
                 }
             }
         }
@@ -79,18 +85,5 @@ public class WebSocketServer
             await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "서버 종료", CancellationToken.None);
             Console.WriteLine($"[연결 종료] {session.Id}");
         }
-    }
-
-    public async Task SendToClient<T>(ClientSession session, ushort opcode, T payload)
-    {
-        byte[] payloadBytes = MemoryPackSerializer.Serialize(payload);
-        var packet = new Packet { Opcode = opcode, Payload = payloadBytes };
-        byte[] raw = MemoryPackSerializer.Serialize(packet);
-
-        await session.Socket.SendAsync(
-            new ArraySegment<byte>(raw),
-            WebSocketMessageType.Binary,
-            true,
-            CancellationToken.None);
     }
 }

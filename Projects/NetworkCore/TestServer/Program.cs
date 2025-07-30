@@ -6,7 +6,7 @@ namespace TestServer
     {
         static async Task Main()
         {
-            var server = new WebSocketServer();
+            var server = new ServerWebSocket();
             await server.StartAsync(); // 기본 포트 8080/ws/
         }
     }
