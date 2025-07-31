@@ -1,22 +1,20 @@
 ﻿using MemoryPack;
 using System.Collections.Concurrent;
 using System.Net;
-using System.Net.Sockets;
 using System.Net.WebSockets;
-using System.Reflection;
 using TSID.Creator.NET;
-using WebCore.Shared;
+using WebCore.Common;
 using WebCore.Shared.C2S;
 using WebCore.Shared.S2C;
 
 namespace WebCore.Server;
 
-public class ServerWebSocket
+public class ServerSocket : GatiWebSocket
 {
     private readonly HttpListener _listener = new();
     private readonly ConcurrentDictionary<Tsid, ClientSession> _clients = new();
 
-    public ServerWebSocket()
+    public ServerSocket()
     {
     }
 
