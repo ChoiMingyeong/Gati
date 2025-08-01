@@ -2,6 +2,6 @@
 {
     public static class Opcode
     {
-        public const ushort RESPONSE_TEST = 1;
+        public const ushort RESPONSE_TEST = 101;
     }
 }

@@ -9,7 +9,7 @@ using WebCore.Shared.S2C;
 
 namespace WebCore.Server;
 
-public class ServerSocket : GatiWebSocket
+public class ServerSocket : GatiSocket
 {
     private readonly HttpListener _listener = new();
     private readonly ConcurrentDictionary<Tsid, ClientSession> _clients = new();
@@ -29,7 +29,9 @@ public class ServerSocket : GatiWebSocket
             var context = await _listener.GetContextAsync();
 
             if (context.Request.IsWebSocketRequest)
+            {
                 _ = HandleWebSocketAsync(context);
+            }
             else
             {
                 context.Response.StatusCode = 400;
@@ -47,31 +49,9 @@ public class ServerSocket : GatiWebSocket
 
         Console.WriteLine($"[클라이언트 접속] {session.Id}");
 
-        var buffer = new byte[2048];
-
         try
         {
-            while (socket.State == WebSocketState.Open)
-            {
-                var result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-
-                if (result.MessageType == WebSocketMessageType.Close)
-                    break;
-
-                var rawData = new ReadOnlySpan<byte>(buffer, 0, result.Count);
-                if(MemoryPackSerializer.Deserialize<NetworkPacket>(rawData) is NetworkPacket networkPacket)
-                {
-                    if(networkPacket.Opcode == WebCore.Shared.C2S.Opcode.REQUEST_TEST)
-                    {
-                        if(MemoryPackSerializer.Deserialize<RequestTest>(networkPacket.Payload) is RequestTest request)
-                        {
-                            Console.WriteLine($"[요청] {session.Id} → {request.Message}");
-                            // Echo back the request
-                            await session.Send(new ResponseTest());
-                        }
-                    }
-                }
-            }
+            await ReceiveAsync(socket);
         }
         catch (Exception ex)
         {

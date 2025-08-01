@@ -9,7 +9,7 @@ namespace WebCore
     {
         public virtual byte[] Serialize()
         {
-            return MemoryPackSerializer.Serialize(this);
+            return MemoryPackSerializer.Serialize(GetType(), this);
         }
 
         public virtual ushort GetOpcode()

@@ -8,7 +8,7 @@ namespace TestClient
     {
         static async Task Main()
         {
-            var client = new ClientWebSocket();
+            var client = new ClientSocket();
             await client.ConnectAsync("ws://localhost:8080/ws/");
 
             while (true)
