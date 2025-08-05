@@ -12,6 +12,8 @@ namespace ServerLib
         public static string ConfigEnvironment => EnvironmentName.ToLower();
         private static string _services;
 
+        public static bool ContainAdminService => Services.Contains("AdminApi");
+
         public static string EnvironmentName
         {
             get

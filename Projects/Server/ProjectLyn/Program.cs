@@ -52,7 +52,7 @@ namespace ProjectLyn
                     {
                         options.ConfigureHttpsDefaults(adapterOptions =>
                         {
-                            //adapterOptions.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
+                            
                         });
                         options.Limits.KeepAliveTimeout = TimeSpan.FromMinutes(10);
                     }).UseStartup<Startup>();

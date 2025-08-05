@@ -29,7 +29,7 @@ namespace ProjectLyn
             Logger.Default.LogDebug("Start ConfigureServices");
 
             //For Browser Call Restfull API
-            //if (App.ContainAdminService) => Services.Contains("AdminApi")
+            if (App.ContainAdminService)
             {
                 services.AddCors(o => o.AddDefaultPolicy(builder =>
                 {
