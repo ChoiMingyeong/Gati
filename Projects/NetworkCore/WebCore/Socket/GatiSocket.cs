@@ -3,18 +3,19 @@ using System.Buffers;
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.WebSockets;
-using WebCore.Network;
+using WebCore.Packet;
 
 namespace WebCore.Socket
 {
-    public abstract class GatiSocket
+    public abstract class GatiSocket<TPacketHandler> where TPacketHandler : IPacketHandler
     {
-        protected readonly PacketRouter _router = new();
+        protected readonly TPacketHandler _packetHandler;
         protected readonly ConcurrentQueue<IPacket> _receivedPackets = [];
 
-        public GatiSocket(PacketRouter packetRouter)
+        public GatiSocket()
         {
-            _router = packetRouter;
+            _packetHandler = Activator.CreateInstance<TPacketHandler>();
+            _packetHandler.RegisterPacketHandlers();
         }
 
         private NetworkPacket EncodePacket<TPacket>([NotNull] TPacket packet) where TPacket : IPacket
@@ -57,7 +58,7 @@ namespace WebCore.Socket
                     var rawData = new ReadOnlySpan<byte>(buffer, 0, result.Count);
                     if (MemoryPackSerializer.Deserialize<NetworkPacket>(rawData) is NetworkPacket networkPacket)
                     {
-                        await _router.RouteAsync(socket, networkPacket.Opcode, networkPacket.Payload);
+                        await _packetHandler.RouteAsync(socket, networkPacket.Opcode, networkPacket.Payload);
                     }
                 }
             }

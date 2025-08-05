@@ -1,6 +1,6 @@
 ﻿using MemoryPack;
 
-namespace WebCore
+namespace WebCore.Packet
 {
     [MemoryPackable]
     sealed internal partial class NetworkPacket

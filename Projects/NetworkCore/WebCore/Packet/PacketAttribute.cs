@@ -1,4 +1,4 @@
-﻿namespace WebCore.Shared;
+﻿namespace WebCore.Packet;
 
 [AttributeUsage(AttributeTargets.Class)]
 public class PacketAttribute : Attribute

@@ -1,8 +1,7 @@
 ﻿using MemoryPack;
 using System.Reflection;
-using WebCore.Shared;
 
-namespace WebCore
+namespace WebCore.Packet
 {
     [MemoryPackable]
     public partial class IPacket

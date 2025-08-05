@@ -2,19 +2,15 @@
 using System.Net;
 using System.Net.WebSockets;
 using TSID.Creator.NET;
-using WebCore.Network;
-using WebCore.Shared.C2S;
+using WebCore.Packet;
 
 namespace WebCore.Socket.Server;
 
-public class ServerSocket : GatiSocket
+public class ServerSocket<TPacketHandler> : GatiSocket<TPacketHandler>
+    where TPacketHandler : IPacketHandler
 {
     private readonly HttpListener _listener = new();
     private readonly ConcurrentDictionary<Tsid, ClientSession> _clients = new();
-
-    public ServerSocket(PacketRouter packetRouter) : base(packetRouter)
-    {
-    }
 
     public async Task StartAsync(string prefix = "http://localhost:8080/ws/")
     {

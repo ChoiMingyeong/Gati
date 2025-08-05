@@ -2,19 +2,18 @@
 using System.Collections.Concurrent;
 using System.Net.WebSockets;
 using System.Reflection;
-using WebCore.Shared;
 
-namespace WebCore.Network
+namespace WebCore.Packet
 {
-    public delegate Task PacketHandler<T>(WebSocket socket, T packet) where T : IPacket;
+    internal delegate Task PacketDelegate<T>(WebSocket socket, T packet) where T : IPacket;
 
-    public class PacketRouter
+    internal class PacketRouter
     {
         private static readonly ConcurrentDictionary<Type, ushort> _packetOpcodes = [];
         private readonly Dictionary<ushort, Func<WebSocket, byte[], Task>> _handlers = [];
 
         // 핸들러 등록
-        public void On<TPacket>(PacketHandler<TPacket> handler) where TPacket : IPacket
+        public void Register<TPacket>(PacketDelegate<TPacket> handler) where TPacket : IPacket
         {
             var opcode = _packetOpcodes.GetOrAdd(typeof(TPacket), TPacket =>
             {

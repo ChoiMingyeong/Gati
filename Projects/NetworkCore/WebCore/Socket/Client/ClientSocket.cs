@@ -1,18 +1,12 @@
 ﻿using System.Net.WebSockets;
-using WebCore.Network;
-using WebCore.Shared.C2S;
+using WebCore.Packet;
 
 namespace WebCore.Socket.Client;
-public class ClientSocket : GatiSocket
+public class ClientSocket<TPacketHandler> : GatiSocket<TPacketHandler>
+    where TPacketHandler : IPacketHandler
 {
     private readonly ClientWebSocket _socket = new();
     private Uri _uri;
-
-    public ClientSocket(PacketRouter packetRouter) : base(packetRouter)
-    {
-        //_socket.Options.KeepAliveInterval = TimeSpan.FromSeconds(30);
-        //_socket.Options.SetBuffer(4096, 4096);
-    }
 
     public async Task ConnectAsync(string uri)
     {

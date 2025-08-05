@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\TestCommon\TestCommon.csproj" />
     <ProjectReference Include="..\WebCore\WebCore.csproj" />
   </ItemGroup>
 

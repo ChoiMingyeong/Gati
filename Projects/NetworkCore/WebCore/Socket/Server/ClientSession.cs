@@ -1,18 +1,17 @@
 ﻿using MemoryPack;
-using System;
 using System.Net.WebSockets;
 using TSID.Creator.NET;
-using WebCore.Shared;
+using WebCore.Packet;
 
 namespace WebCore.Socket.Server;
 
 public class ClientSession
 {
     public Tsid Id { get; } = TsidCreator.GetTsid();
-    public System.Net.WebSockets.WebSocket Socket { get; }
+    public WebSocket Socket { get; }
     public DateTime ConnectedAt { get; } = DateTime.UtcNow;
 
-    public ClientSession(System.Net.WebSockets.WebSocket socket)
+    public ClientSession(WebSocket socket)
     {
         Socket = socket;
     }

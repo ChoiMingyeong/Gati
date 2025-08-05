@@ -1,4 +1,4 @@
-﻿namespace WebCore.Shared;
+﻿namespace TestCommon.Shared.S2C;
 
 public enum ResponseCode
 {
