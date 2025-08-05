@@ -9,8 +9,10 @@
         var req = {
             Data : 0
         }
-        $storeGlobalInfo.InternalSendApiAsync("GetData", "post", req, (res) => {
+        $storeGlobalInfo.InternalSendApiAsync("PostData2", "post", req, (res) => {
             alert("접속완료");
+            console.log(res.result.Code);
+            console.log(res.data);
         });
     }
 </script>
