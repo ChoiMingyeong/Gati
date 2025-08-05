@@ -1,20 +1,18 @@
-﻿using MemoryPack;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Net;
 using System.Net.WebSockets;
 using TSID.Creator.NET;
-using WebCore.Common;
+using WebCore.Network;
 using WebCore.Shared.C2S;
-using WebCore.Shared.S2C;
 
-namespace WebCore.Server;
+namespace WebCore.Socket.Server;
 
 public class ServerSocket : GatiSocket
 {
     private readonly HttpListener _listener = new();
     private readonly ConcurrentDictionary<Tsid, ClientSession> _clients = new();
 
-    public ServerSocket()
+    public ServerSocket(PacketRouter packetRouter) : base(packetRouter)
     {
     }
 
@@ -64,4 +62,5 @@ public class ServerSocket : GatiSocket
             Console.WriteLine($"[연결 종료] {session.Id}");
         }
     }
+
 }

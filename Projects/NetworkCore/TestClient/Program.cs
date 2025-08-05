@@ -1,6 +1,8 @@
-﻿using WebCore.Client;
-using WebCore.Shared;
+﻿using System.Net.WebSockets;
+using WebCore.Network;
 using WebCore.Shared.C2S;
+using WebCore.Shared.S2C;
+using WebCore.Socket.Client;
 
 namespace TestClient
 {
@@ -8,7 +10,11 @@ namespace TestClient
     {
         static async Task Main()
         {
-            var client = new ClientSocket();
+            PacketRouter router = new();
+            router.On<ResponseTest>(OnResponseTest);
+            
+            var client = new ClientSocket(router);
+
             await client.ConnectAsync("ws://localhost:8080/ws/");
 
             while (true)
@@ -21,6 +27,10 @@ namespace TestClient
 
                 await client.Send(new RequestTest() { Message = input });
             }
+        }
+        public static async Task OnResponseTest(WebSocket socket, ResponseTest packet)
+        {
+            Console.WriteLine(packet.ResponseCode);
         }
     }
 }

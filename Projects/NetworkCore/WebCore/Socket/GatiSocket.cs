@@ -3,14 +3,19 @@ using System.Buffers;
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.WebSockets;
-using WebCore.Shared.C2S;
-using WebCore.Shared.S2C;
+using WebCore.Network;
 
-namespace WebCore.Common
+namespace WebCore.Socket
 {
     public abstract class GatiSocket
     {
+        protected readonly PacketRouter _router = new();
         protected readonly ConcurrentQueue<IPacket> _receivedPackets = [];
+
+        public GatiSocket(PacketRouter packetRouter)
+        {
+            _router = packetRouter;
+        }
 
         private NetworkPacket EncodePacket<TPacket>([NotNull] TPacket packet) where TPacket : IPacket
         {
@@ -29,7 +34,7 @@ namespace WebCore.Common
             return MemoryPackSerializer.Deserialize<TPacket>(buffer);
         }
 
-        protected async Task SendAsync<TPacket>(WebSocket socket, [NotNull] TPacket packet) where TPacket : IPacket
+        public async Task SendAsync<TPacket>(WebSocket socket, [NotNull] TPacket packet) where TPacket : IPacket
         {
             await socket.SendAsync(
                 MemoryPackSerializer.Serialize(EncodePacket(packet)),
@@ -52,23 +57,7 @@ namespace WebCore.Common
                     var rawData = new ReadOnlySpan<byte>(buffer, 0, result.Count);
                     if (MemoryPackSerializer.Deserialize<NetworkPacket>(rawData) is NetworkPacket networkPacket)
                     {
-                        Type packetType = typeof(IPacket);
-
-                        switch(networkPacket.Opcode)
-                        {
-                            case Shared.S2C.Opcode.RESPONSE_TEST:
-                                packetType = typeof(ResponseTest);
-                                break;
-                            case Shared.C2S.Opcode.REQUEST_TEST:
-                                packetType = typeof(RequestTest);
-                                break;
-                        }
-
-                        var packet = MemoryPackSerializer.Deserialize(packetType, networkPacket.Payload);
-                        if (null != packet)
-                        {
-                            _receivedPackets.Enqueue((IPacket)packet);
-                        }
+                        await _router.RouteAsync(socket, networkPacket.Opcode, networkPacket.Payload);
                     }
                 }
             }
