@@ -11,8 +11,13 @@
         }
         $storeGlobalInfo.InternalSendApiAsync("PostData2", "post", req, (res) => {
             alert("접속완료");
-            console.log(res.result.Code);
-            console.log(res.data);
+            /*
+            console.log("res : ", res);
+            console.log("res.result : ", res.result);
+            console.log("res.result.code : ", res.result.code);
+            console.log("res.result.message : ", res.result.message);
+            console.log("res.data : ", res.data);
+            */
         });
     }
 </script>

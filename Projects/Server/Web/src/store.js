@@ -30,8 +30,7 @@ export let storeGlobalInfo = writable({
                 'Content-Type': 'application/json'
             }
         }).then((response) => response.json())
-        .then((data) => console.log(data));
-        //cb(response);
+        .then((data) => cb(data));
         } catch(err) {
             alert(`SendAPIError | ${err}`);
         }
