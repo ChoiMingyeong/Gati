@@ -3,7 +3,7 @@
 namespace WebCore.Packet
 {
     [MemoryPackable]
-    sealed internal partial class NetworkPacket
+    sealed public partial class NetworkPacket
     {
         public ushort Opcode { get; set; }
 

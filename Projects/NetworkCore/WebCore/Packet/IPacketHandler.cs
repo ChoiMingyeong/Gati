@@ -11,7 +11,7 @@ namespace WebCore.Packet
         {
             var methods = GetType()
                 .GetMethods(BindingFlags.Instance | BindingFlags.NonPublic)
-                .Where(m => m.GetCustomAttribute<PacketHandlerAttribute>() != null);
+                .Where(m => m.GetCustomAttribute<ProtocolMethodAttribute>() != null);
 
             foreach (var method in methods)
             {
