@@ -6,7 +6,7 @@ namespace TestClient
 {
     public class ClientPacketHandler : IPacketHandler
     {
-        [PacketHandler]
+        [ProtocolMethod]
         private Task OnResponseTest(WebSocket socket, ResponseTest packet)
         {
             Console.WriteLine(packet.ResponseCode);

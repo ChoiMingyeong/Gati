@@ -1,85 +1,16 @@
-﻿using MemoryPack;
-using System;
-using System.Buffers;
-using System.Diagnostics.CodeAnalysis;
-using System.Net.WebSockets;
-using WebCore.Packet;
+﻿using System.Net.WebSockets;
 
 namespace WebCore.Socket
 {
-    public class GatiSocket
+    public class GatiClient
     {
-        public WebSocket Socket { get; init; }
+        private readonly GatiSocket _socket = new GatiSocket(new ClientWebSocket());
+        private ClientWebSocket ClientWebSocket => (ClientWebSocket)_socket.Socket;
 
-        public GatiSocket(WebSocket socket)
-        {
-            Socket = socket;
-        }
-
-        private static NetworkPacket EncodePacket<TPacket>([NotNull] TPacket packet) where TPacket : IPacket
-        {
-            return new NetworkPacket
-            {
-                Opcode = packet.GetOpcode(),
-                Payload = packet.Serialize(),
-            };
-        }
-
-        public async Task SendAsync<TPacket>([NotNull] TPacket packet) where TPacket : IPacket
-        {
-            await Socket.SendAsync(
-                MemoryPackSerializer.Serialize(EncodePacket(packet)),
-                WebSocketMessageType.Binary,
-                true,
-                CancellationToken.None);
-        }
-
-        public async Task<Queue<NetworkPacket>> ReceiveAsync()
-        {
-            Queue<NetworkPacket> receivedPackets = [];
-            byte[] buffer = ArrayPool<byte>.Shared.Rent(4096);
-
-            try
-            {
-                while (Socket.State == WebSocketState.Open)
-                {
-                    var result = await Socket.ReceiveAsync(buffer, CancellationToken.None);
-                    if (result.MessageType == WebSocketMessageType.Close)
-                        break;
-
-                    var rawData = new ReadOnlySpan<byte>(buffer, 0, result.Count);
-                    if (MemoryPackSerializer.Deserialize<NetworkPacket>(rawData) is NetworkPacket networkPacket)
-                    {
-                        receivedPackets.Enqueue(networkPacket);
-                    }
-                }
-            }
-            finally
-            {
-                ArrayPool<byte>.Shared.Return(buffer);
-            }
-
-            return receivedPackets;
-        }
-    }
-
-    public class ClientSocket : GatiSocket
-    {
-        private readonly ClientWebSocket _clientWebSocket = new();
-        private Uri _uri;
-        public ClientSocket(WebSocket socket) : base(socket)
-        {
-        }
         public async Task ConnectAsync(string uri)
         {
-            _uri = new Uri(uri);
-            await _clientWebSocket.ConnectAsync(_uri, CancellationToken.None);
-            Console.WriteLine("[클라이언트] 연결됨");
-            _ = Task.Run(async () => await ReceiveAsync());
-        }
-        public async Task SendAsync<TPacket>([NotNull] TPacket packet) where TPacket : IPacket
-        {
-            await base.SendAsync(packet);
+            await ClientWebSocket.ConnectAsync(new Uri(uri), CancellationToken.None);
+            _ = Task.Run(_socket.ReceiveAsync);
         }
     }
 

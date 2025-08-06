@@ -2,6 +2,7 @@
 using WebCore.Packet;
 
 namespace WebCore.Socket.Client;
+
 public class ClientSocket<TPacketHandler> : GatiSocket<TPacketHandler>
     where TPacketHandler : IPacketHandler
 {

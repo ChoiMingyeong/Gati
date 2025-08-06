@@ -6,7 +6,7 @@ namespace TestServer
 {
     public class ServerPacketHandler : IPacketHandler
     {
-        [PacketHandler]
+        [ProtocolMethod]
         private Task OnRequestTest(WebSocket socket, RequestTest packet)
         {
             Console.WriteLine(packet.Message);

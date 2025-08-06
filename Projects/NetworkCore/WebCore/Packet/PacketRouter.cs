@@ -5,15 +5,17 @@ using System.Reflection;
 
 namespace WebCore.Packet
 {
-    internal delegate Task PacketDelegate<T>(WebSocket socket, T packet) where T : IPacket;
+    internal delegate Task PacketDelegate<TSocket, TPacket>(TSocket socket, TPacket packet)
+        where TSocket : WebSocket
+        where TPacket : IPacket;
 
-    internal class PacketRouter
+    internal class PacketRouter<TSocket> where TSocket : WebSocket
     {
         private static readonly ConcurrentDictionary<Type, ushort> _packetOpcodes = [];
-        private readonly Dictionary<ushort, Func<WebSocket, byte[], Task>> _handlers = [];
+        private readonly Dictionary<ushort, Func<TSocket, byte[], Task>> _handlers = [];
 
         // 핸들러 등록
-        public void Register<TPacket>(PacketDelegate<TPacket> handler) where TPacket : IPacket
+        public void Register<TPacket>(PacketDelegate<TSocket, TPacket> handler) where TPacket : IPacket
         {
             var opcode = _packetOpcodes.GetOrAdd(typeof(TPacket), TPacket =>
             {
@@ -37,7 +39,7 @@ namespace WebCore.Packet
         }
 
         // 패킷 라우팅
-        public async Task RouteAsync(WebSocket socket, ushort opcode, byte[] raw)
+        public async Task RouteAsync(TSocket socket, ushort opcode, byte[] raw)
         {
             if (_handlers.TryGetValue(opcode, out var handler))
             {
