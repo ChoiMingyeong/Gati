@@ -4,7 +4,7 @@ import * as network from "../network.json";
 export const SceneEnum = 
 {
     Login: 0,
-    Menu: 1,
+    Home: 1,
 }
 
 export let storeGlobalInfo = writable({

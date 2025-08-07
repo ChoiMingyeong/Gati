@@ -7,7 +7,7 @@ import Home from "./Home.svelte";
 
 {#if $storeGlobalInfo.Scene == SceneEnum.Login}
 	<Login />
-{:else if $storeGlobalInfo.Scene == SceneEnum.Menu}
+{:else if $storeGlobalInfo.Scene == SceneEnum.Home}
 	<Home />
 {:else}
 	<div>Error</div>
