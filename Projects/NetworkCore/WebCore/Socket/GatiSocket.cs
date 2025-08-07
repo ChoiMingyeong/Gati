@@ -1,6 +1,6 @@
 ﻿using MemoryPack;
-using System;
 using System.Buffers;
+using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.WebSockets;
 using WebCore.Packet;
@@ -9,7 +9,14 @@ namespace WebCore.Socket
 {
     public class GatiSocket
     {
+        public event Func<Task>? OnConnected;
+        public event Func<Task>? OnDisconnected;
+
+        public bool IsConnected => Socket.State == WebSocketState.Open;
+
         public WebSocket Socket { get; init; }
+
+        public ConcurrentQueue<NetworkPacket> ReceivedPackets { get; } = [];
 
         public GatiSocket(WebSocket socket)
         {
@@ -34,9 +41,9 @@ namespace WebCore.Socket
                 CancellationToken.None);
         }
 
-        public async Task<Queue<NetworkPacket>> ReceiveAsync()
+        public async Task ReceiveAsync()
         {
-            Queue<NetworkPacket> receivedPackets = [];
+            List<NetworkPacket> receivedPackets = [];
             byte[] buffer = ArrayPool<byte>.Shared.Rent(4096);
 
             try
@@ -45,12 +52,14 @@ namespace WebCore.Socket
                 {
                     var result = await Socket.ReceiveAsync(buffer, CancellationToken.None);
                     if (result.MessageType == WebSocketMessageType.Close)
+                    {
                         break;
+                    }
 
                     var rawData = new ReadOnlySpan<byte>(buffer, 0, result.Count);
                     if (MemoryPackSerializer.Deserialize<NetworkPacket>(rawData) is NetworkPacket networkPacket)
                     {
-                        receivedPackets.Enqueue(networkPacket);
+                        ReceivedPackets.Enqueue(networkPacket);
                     }
                 }
             }
@@ -58,94 +67,58 @@ namespace WebCore.Socket
             {
                 ArrayPool<byte>.Shared.Return(buffer);
             }
+        }
 
-            return receivedPackets;
+        public async Task Connected()
+        {
+            if(null != OnConnected)
+            {
+                await OnConnected.Invoke();
+            }
+
+            _ = Task.Run(async () =>
+            {
+                while (Socket.State == WebSocketState.Open)
+                {
+                    await ReceiveAsync();
+                }
+            });
+        }
+
+        public async Task Disconnected()
+        {
+            if (null != OnDisconnected)
+            {
+                await OnDisconnected.Invoke();
+            }
+
+            await CloseAsync();
+        }
+
+        public async Task CloseAsync()
+        {
+            if (false == IsConnected)
+            {
+                return;
+            }
+
+            await Socket.CloseAsync(WebSocketCloseStatus.NormalClosure, null, CancellationToken.None);
         }
     }
 
     public class ClientSocket : GatiSocket
     {
         private readonly ClientWebSocket _clientWebSocket = new();
-        private Uri _uri;
+
         public ClientSocket(WebSocket socket) : base(socket)
         {
         }
+
         public async Task ConnectAsync(string uri)
         {
-            _uri = new Uri(uri);
-            await _clientWebSocket.ConnectAsync(_uri, CancellationToken.None);
+            await _clientWebSocket.ConnectAsync(new Uri(uri), CancellationToken.None);
             Console.WriteLine("[클라이언트] 연결됨");
             _ = Task.Run(async () => await ReceiveAsync());
         }
-        public async Task SendAsync<TPacket>([NotNull] TPacket packet) where TPacket : IPacket
-        {
-            await base.SendAsync(packet);
-        }
     }
-
-    //public abstract class GatiSocket<TPacketHandler> where TPacketHandler : IPacketHandler
-    //{
-    //    protected readonly TPacketHandler _packetHandler;
-    //    protected readonly ConcurrentQueue<IPacket> _receivedPackets = [];
-
-    //    public GatiSocket()
-    //    {
-    //        _packetHandler = Activator.CreateInstance<TPacketHandler>();
-    //        _packetHandler.RegisterPacketHandlers();
-    //    }
-
-    //    private NetworkPacket EncodePacket<TPacket>([NotNull] TPacket packet) where TPacket : IPacket
-    //    {
-    //        return new NetworkPacket
-    //        {
-    //            Opcode = packet.GetOpcode(),
-    //            Payload = packet.Serialize(),
-    //        };
-    //    }
-
-    //    private TPacket? DecodePacket<TPacket>(in ReadOnlySpan<byte> buffer) where TPacket : IPacket
-    //    {
-    //        if (MemoryPackSerializer.Deserialize<NetworkPacket>(buffer) is not NetworkPacket networkPacket)
-    //            return null;
-
-    //        return MemoryPackSerializer.Deserialize<TPacket>(buffer);
-    //    }
-
-    //    public async Task SendAsync<TPacket>(WebSocket socket, [NotNull] TPacket packet) where TPacket : IPacket
-    //    {
-    //        await socket.SendAsync(
-    //            MemoryPackSerializer.Serialize(EncodePacket(packet)),
-    //            WebSocketMessageType.Binary,
-    //            true,
-    //            CancellationToken.None);
-    //    }
-
-    //    protected async Task ReceiveAsync(WebSocket socket)
-    //    {
-    //        byte[] buffer = ArrayPool<byte>.Shared.Rent(4096);
-    //        try
-    //        {
-    //            while (socket.State == WebSocketState.Open)
-    //            {
-    //                var result = await socket.ReceiveAsync(buffer, CancellationToken.None);
-    //                if (result.MessageType == WebSocketMessageType.Close)
-    //                    break;
-
-    //                var rawData = new ReadOnlySpan<byte>(buffer, 0, result.Count);
-    //                if (MemoryPackSerializer.Deserialize<NetworkPacket>(rawData) is NetworkPacket networkPacket)
-    //                {
-    //                    await _packetHandler.RouteAsync(socket, networkPacket.Opcode, networkPacket.Payload);
-    //                }
-    //            }
-    //        }
-    //        catch (Exception ex)
-    //        {
-    //            Console.WriteLine($"[에러] {ex.Message}");
-    //        }
-    //        finally
-    //        {
-    //            ArrayPool<byte>.Shared.Return(buffer);
-    //        }
-    //    }
-    //}
 }

@@ -6,8 +6,8 @@ namespace TestServer
     {
         static async Task Main()
         {
-            ServerSocket<ServerPacketHandler> server = new();
-            await server.StartAsync();
+            GatiServer server = new();
+            await server.StartAsync("http://localhost:8080/ws/");
         }
     }
 }

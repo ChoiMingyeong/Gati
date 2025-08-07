@@ -4,13 +4,13 @@ using WebCore.Packet;
 
 namespace TestClient
 {
-    public class ClientPacketHandler : IPacketHandler
-    {
-        [ProtocolMethod]
-        private Task OnResponseTest(WebSocket socket, ResponseTest packet)
-        {
-            Console.WriteLine(packet.ResponseCode);
-            return Task.CompletedTask;
-        }
-    }
+    //public class ClientPacketHandler : IPacketHandler
+    //{
+    //    [ProtocolMethod]
+    //    private Task OnResponseTest(WebSocket socket, ResponseTest packet)
+    //    {
+    //        Console.WriteLine(packet.ResponseCode);
+    //        return Task.CompletedTask;
+    //    }
+    //}
 }
