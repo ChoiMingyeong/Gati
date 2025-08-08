@@ -13,7 +13,7 @@ namespace WebCore.Packet
 
         public virtual ushort GetOpcode()
         {
-            return GetType().GetCustomAttribute<PacketAttribute>() is not PacketAttribute packetAttribute ?
+            return GetType().GetCustomAttribute<PacketProtocolAttribute>() is not PacketProtocolAttribute packetAttribute ?
                 throw new NotImplementedException()
                 : packetAttribute.Opcode;
         }

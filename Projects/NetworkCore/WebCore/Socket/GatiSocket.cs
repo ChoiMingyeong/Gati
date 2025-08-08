@@ -14,7 +14,7 @@ namespace WebCore.Socket
 
         public bool IsConnected => Socket.State == WebSocketState.Open;
 
-        public WebSocket Socket { get; init; }
+        public WebSocket Socket { get; }
 
         public ConcurrentQueue<NetworkPacket> ReceivedPackets { get; } = [];
 
@@ -41,34 +41,6 @@ namespace WebCore.Socket
                 CancellationToken.None);
         }
 
-        public async Task ReceiveAsync()
-        {
-            List<NetworkPacket> receivedPackets = [];
-            byte[] buffer = ArrayPool<byte>.Shared.Rent(4096);
-
-            try
-            {
-                while (Socket.State == WebSocketState.Open)
-                {
-                    var result = await Socket.ReceiveAsync(buffer, CancellationToken.None);
-                    if (result.MessageType == WebSocketMessageType.Close)
-                    {
-                        break;
-                    }
-
-                    var rawData = new ReadOnlySpan<byte>(buffer, 0, result.Count);
-                    if (MemoryPackSerializer.Deserialize<NetworkPacket>(rawData) is NetworkPacket networkPacket)
-                    {
-                        ReceivedPackets.Enqueue(networkPacket);
-                    }
-                }
-            }
-            finally
-            {
-                ArrayPool<byte>.Shared.Return(buffer);
-            }
-        }
-
         public async Task Connected()
         {
             if(null != OnConnected)
@@ -80,7 +52,7 @@ namespace WebCore.Socket
             {
                 while (Socket.State == WebSocketState.Open)
                 {
-                    await ReceiveAsync();
+                    await ReceiveLoopAsync();
                 }
             });
         }
@@ -104,21 +76,34 @@ namespace WebCore.Socket
 
             await Socket.CloseAsync(WebSocketCloseStatus.NormalClosure, null, CancellationToken.None);
         }
-    }
-
-    public class ClientSocket : GatiSocket
-    {
-        private readonly ClientWebSocket _clientWebSocket = new();
-
-        public ClientSocket(WebSocket socket) : base(socket)
+        private async Task ReceiveLoopAsync()
         {
+            byte[] buffer = ArrayPool<byte>.Shared.Rent(4096);
+
+            try
+            {
+                while (Socket.State == WebSocketState.Open)
+                {
+                    var result = await Socket.ReceiveAsync(buffer, CancellationToken.None);
+                    if (result.MessageType == WebSocketMessageType.Close)
+                    {
+                        break;
+                    }
+
+                    var rawData = new ReadOnlySpan<byte>(buffer, 0, result.Count);
+                    if (MemoryPackSerializer.Deserialize<NetworkPacket>(rawData) is NetworkPacket networkPacket)
+                    {
+                        ReceivedPackets.Enqueue(networkPacket);
+                    }
+
+                    await Task.Delay(10);
+                }
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(buffer);
+            }
         }
 
-        public async Task ConnectAsync(string uri)
-        {
-            await _clientWebSocket.ConnectAsync(new Uri(uri), CancellationToken.None);
-            Console.WriteLine("[클라이언트] 연결됨");
-            _ = Task.Run(async () => await ReceiveAsync());
-        }
     }
 }
