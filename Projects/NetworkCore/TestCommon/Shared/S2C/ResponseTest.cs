@@ -3,8 +3,8 @@ using WebCore.Packet;
 
 namespace TestCommon.Shared.S2C;
 
+[Packet(Opcode.RESPONSE_TEST)]
 [MemoryPackable]
-[PacketProtocol(Opcode.RESPONSE_TEST)]
 public partial class ResponseTest : IPacket
 {
     public ResponseCode ResponseCode { get; set; }

@@ -6,7 +6,7 @@ namespace TestServer
     {
         static async Task Main()
         {
-            GatiServer<TestServerRouter> server = new();
+            GatiServer server = new();
             await server.StartAsync("http://localhost:8080/ws/");
         }
     }

@@ -1,29 +1,15 @@
 ﻿using System.Collections.Concurrent;
 using System.Net;
-using System.Net.WebSockets;
 using TSID.Creator.NET;
 using WebCore.Packet;
 
 namespace WebCore.Socket.Server
 {
-    public class GatiServer<TRouter> where TRouter : IServerPacketRouter
+    public class GatiServer
     {
         private readonly HttpListener _listener = new();
-        private readonly ConcurrentDictionary<Tsid, ClientSession> _clients = new();
+        private readonly ConcurrentDictionary<Tsid, GatiSocket> _clients = new();
         private readonly ConcurrentQueue<NetworkPacket> _recvPackets = [];
-        private readonly TRouter _router;
-
-        public GatiServer()
-        {
-            if (Activator.CreateInstance<TRouter>() is TRouter router)
-            {
-                _router = router;
-            }
-            else
-            {
-                throw new InvalidOperationException($"Failed to create instance of {typeof(TRouter).Name}.");
-            }
-        }
 
         public async Task StartAsync(string prefix)
         {
@@ -50,50 +36,108 @@ namespace WebCore.Socket.Server
         private async Task AcceptAsync(HttpListenerContext context)
         {
             var wsContext = await context.AcceptWebSocketAsync(null);
-            ClientSession session = new(wsContext.WebSocket);
+            GatiSocket session = new(wsContext.WebSocket);
+            Tsid sessionID;
+            do { sessionID = TsidCreator.GetTsid(); }
+            while (_clients.ContainsKey(sessionID));
 
-            if (_clients.TryAdd(session.ID, session))
+            if (_clients.TryAdd(sessionID, session))
             {
-                Console.WriteLine($"[클라이언트 접속] {session.ID}");
+                Console.WriteLine($"[클라이언트 접속] {sessionID}");
                 await session.Connected();
 
                 try
                 {
-                    while (session.Routable)
+                    while (false == session.ReceivedPackets.IsEmpty || session.IsConnected)
                     {
-                        await RouteAsync(session);
+                        while (session.ReceivedPackets.TryDequeue(out var packet))
+                        {
+                            _recvPackets.Enqueue(packet);
+                        }
+
                         await Task.Delay(10);
                     }
                 }
-                catch (WebSocketException wsex)
-                {
-                    Console.WriteLine($"[WebSocket 에러] {session.ID} → {wsex.Message}");
-                }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"[에러] {session.ID} → {ex.Message}");
+                    Console.WriteLine($"[에러] {sessionID} → {ex.Message}");
                 }
                 finally
                 {
-                    if (_clients.TryRemove(session.ID, out _))
+                    if(_clients.TryRemove(sessionID, out _))
                     {
                         await session.Disconnected();
                     }
 
-                    Console.WriteLine($"[연결 종료] {session.ID}");
-                }
-            }
-        }
-
-        private async Task RouteAsync(ClientSession session)
-        {
-            foreach (var networkPacket in session.GetReceivedPackets())
-            {
-                if (_router.ProtocolMethods.TryGetValue(networkPacket.Opcode, out var method))
-                {
-                    await method(session, networkPacket.Payload);
+                    Console.WriteLine($"[연결 종료] {sessionID}");
                 }
             }
         }
     }
+
+    //public abstract class GatiSocket<TPacketHandler> where TPacketHandler : IPacketHandler
+    //{
+    //    protected readonly TPacketHandler _packetHandler;
+    //    protected readonly ConcurrentQueue<IPacket> _receivedPackets = [];
+
+    //    public GatiSocket()
+    //    {
+    //        _packetHandler = Activator.CreateInstance<TPacketHandler>();
+    //        _packetHandler.RegisterPacketHandlers();
+    //    }
+
+    //    private NetworkPacket EncodePacket<TPacket>([NotNull] TPacket packet) where TPacket : IPacket
+    //    {
+    //        return new NetworkPacket
+    //        {
+    //            Opcode = packet.GetOpcode(),
+    //            Payload = packet.Serialize(),
+    //        };
+    //    }
+
+    //    private TPacket? DecodePacket<TPacket>(in ReadOnlySpan<byte> buffer) where TPacket : IPacket
+    //    {
+    //        if (MemoryPackSerializer.Deserialize<NetworkPacket>(buffer) is not NetworkPacket networkPacket)
+    //            return null;
+
+    //        return MemoryPackSerializer.Deserialize<TPacket>(buffer);
+    //    }
+
+    //    public async Task SendAsync<TPacket>(WebSocket socket, [NotNull] TPacket packet) where TPacket : IPacket
+    //    {
+    //        await socket.SendAsync(
+    //            MemoryPackSerializer.Serialize(EncodePacket(packet)),
+    //            WebSocketMessageType.Binary,
+    //            true,
+    //            CancellationToken.None);
+    //    }
+
+    //    protected async Task ReceiveAsync(WebSocket socket)
+    //    {
+    //        byte[] buffer = ArrayPool<byte>.Shared.Rent(4096);
+    //        try
+    //        {
+    //            while (socket.State == WebSocketState.Open)
+    //            {
+    //                var result = await socket.ReceiveAsync(buffer, CancellationToken.None);
+    //                if (result.MessageType == WebSocketMessageType.Close)
+    //                    break;
+
+    //                var rawData = new ReadOnlySpan<byte>(buffer, 0, result.Count);
+    //                if (MemoryPackSerializer.Deserialize<NetworkPacket>(rawData) is NetworkPacket networkPacket)
+    //                {
+    //                    await _packetHandler.RouteAsync(socket, networkPacket.Opcode, networkPacket.Payload);
+    //                }
+    //            }
+    //        }
+    //        catch (Exception ex)
+    //        {
+    //            Console.WriteLine($"[에러] {ex.Message}");
+    //        }
+    //        finally
+    //        {
+    //            ArrayPool<byte>.Shared.Return(buffer);
+    //        }
+    //    }
+    //}
 }
