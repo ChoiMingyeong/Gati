@@ -1,13 +1,13 @@
 ﻿namespace WebCore.Packet;
 
 [AttributeUsage(AttributeTargets.Class)]
-public class PacketAttribute : Attribute
+public class PacketProtocolAttribute : Attribute
 {
     public ushort Opcode { get; init; }
 
     public bool IsCompressed { get; set; }
 
-    public PacketAttribute(ushort opcode, bool isCompressed = false)
+    public PacketProtocolAttribute(ushort opcode, bool isCompressed = false)
     {
         Opcode = opcode;
         IsCompressed = isCompressed;

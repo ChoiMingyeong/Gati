@@ -1,20 +1,31 @@
 ﻿using MemoryPack;
 using System.Net.WebSockets;
+using TSID.Creator.NET;
 using WebCore.Packet;
 
 namespace WebCore.Socket.Server;
 
 public class ClientSession
 {
-    public GatiSocket Socket { get; }
+    public Tsid ID { get; } = TsidCreator.GetTsid();
 
-    public ClientSession(WebSocket socket)
-    {
-        Socket = new GatiSocket(socket);
-    }
+    private readonly GatiSocket _socket;
 
-    public async Task Send<TPacket> (TPacket packet) where TPacket : IPacket
+    public ClientSession(WebSocket socket) => _socket = new GatiSocket(socket);
+
+    public async Task Send<TPacket>(TPacket packet) where TPacket : IPacket => await _socket.SendAsync(packet);
+
+    public async Task Connected() => await _socket.Connected();
+
+    public async Task Disconnected() => await _socket.Disconnected();
+
+    public bool Routable => _socket.IsConnected || false == _socket.ReceivedPackets.IsEmpty;
+
+    public IEnumerable<NetworkPacket> GetReceivedPackets()
     {
-        await Socket.SendAsync(packet);
+        while(_socket.ReceivedPackets.TryDequeue(out var packet))
+        {
+            yield return packet;
+        }    
     }
 }

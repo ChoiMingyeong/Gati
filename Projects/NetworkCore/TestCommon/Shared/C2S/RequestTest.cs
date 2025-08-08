@@ -3,8 +3,8 @@ using WebCore.Packet;
 
 namespace TestCommon.Shared.C2S
 {
-    [Packet(Opcode.REQUEST_TEST)]
     [MemoryPackable]
+    [PacketProtocol(Opcode.REQUEST_TEST)]
     public partial class RequestTest : IPacket
     {
         public string Message { get; set; } = string.Empty;
