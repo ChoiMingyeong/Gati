@@ -1,19 +1,18 @@
-// Login.jsx
 import React, { useState } from "react";
-import { SceneEnum, useGlobalStore } from "../store/store";
+import { useNavigate } from 'react-router-dom';
 import "./Login.css";
 
 export default function Login() {
-  const { setScene } = useGlobalStore();
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [pw, setPw] = useState("");
 
   const handleLogin = (e) => {
     e.preventDefault();
-    console.log("email:", email);
-    console.log("pw:", pw);
+    //console.log("email:", email);
+    //console.log("pw:", pw);
     alert("접속완료");
-    setScene(SceneEnum.Home);
+    navigate('/home/account');
   };
 
   return (

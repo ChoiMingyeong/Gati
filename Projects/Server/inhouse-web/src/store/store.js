@@ -1,4 +1,3 @@
-// store.js
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import network from '../network.json';
 
@@ -19,7 +18,7 @@ export const GlobalProvider = ({ children }) => {
   const InternalSendApiAsync = useCallback(async (apiUrl, meth, request, cb) => {
     try {
       const url = `https://${network.Host}:${network.Port}/InHouse/${apiUrl}`;
-      console.log("url : ", url);
+      //console.log("url : ", url);
       const data = await fetch(url, {
         method: meth,
         body: JSON.stringify({ request }),
@@ -28,7 +27,8 @@ export const GlobalProvider = ({ children }) => {
         }
       }).then(res => res.json());
       cb(data);
-    } catch (err) {
+    } 
+    catch (err) {
       alert(`SendAPIError | ${err}`);
     }
   }, []);
