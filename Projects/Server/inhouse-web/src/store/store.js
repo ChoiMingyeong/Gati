@@ -1,15 +1,10 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import network from '../network.json';
 
-export const SceneEnum = {
-  Login: 0,
-  Home: 1
-};
-
 const GlobalContext = createContext();
 
 export const GlobalProvider = ({ children }) => {
-  const [scene, setScene] = useState(SceneEnum.Login);
+  const [token, setToken] = useState(localStorage.getItem("token") || null);
 
   const GetAdminServerUrl = useCallback((apiUrl) => {
     return `https://${network.Host}:${network.Port}/InHouse/${apiUrl}`;
@@ -17,7 +12,7 @@ export const GlobalProvider = ({ children }) => {
 
   const InternalSendApiAsync = useCallback(async (apiUrl, meth, request, cb) => {
     try {
-      const url = `https://${network.Host}:${network.Port}/InHouse/${apiUrl}`;
+      const url = GetAdminServerUrl(apiUrl);
       //console.log("url : ", url);
       const data = await fetch(url, {
         method: meth,

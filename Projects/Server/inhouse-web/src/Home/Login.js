@@ -1,19 +1,51 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from 'react-router-dom';
+import { useGlobalStore } from "../store/store";
 import "./Login.css";
 
 export default function Login() {
+  const { PostApiAsync, GetApiAsync } = useGlobalStore();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [pw, setPw] = useState("");
 
+  useEffect(() => {
+    validateToken((res) => {
+      if (res.valid) {
+        // 로그인 상태
+        navigate('/home/account');
+      }
+    });
+  },[]);
+
+  const login = (cb) => {
+    PostApiAsync("Auth/login", {username, password }, (data) => {
+      if (data.success) {
+        localStorage.setItem("token", data.token);
+        setToken(data.token);
+        navigate('/home/account');
+      }
+      cb(data);
+    })
+  }
+
   const handleLogin = (e) => {
     e.preventDefault();
-    //console.log("email:", email);
-    //console.log("pw:", pw);
-    alert("접속완료");
-    navigate('/home/account');
+    login((res) => {
+      if (!res.success) {
+        alert("로그인 실패");
+      }
+    })
   };
+
+  const validateToken = (cb) => {
+    const savedToken = localStorage.getItem("token");
+    if (!savedToken) {
+      cb({ valid: false });
+      return;
+    }
+    GetApiAsync('Auth/validate?token=${savedToken}', {}, cb);
+  }
 
   return (
     <div className="login">

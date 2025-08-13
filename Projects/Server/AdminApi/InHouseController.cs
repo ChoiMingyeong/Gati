@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Identity.Data;
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -66,6 +67,26 @@ namespace AdminApi.Controllers
             };
 
             return new JsonResult(result);
+        }
+
+        [HttpPost]
+        public IActionResult Login([FromBody] LoginRequest req)
+        {
+            // DB 검증
+            if (req.Password == "123")
+            {
+                return Ok(new { success = true, token = "123token" });
+            }
+            return Unauthorized(new { success = false });
+        }
+
+        [HttpGet]
+        public IActionResult Validate([FromQuery] string token)
+        {
+            // JWT 검증
+            if (token == "123token")
+                return Ok(new { valid = true});
+            return Unauthorized(new { valid = false });
         }
     }
 }
