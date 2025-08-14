@@ -8,6 +8,7 @@ export default function Login() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [pw, setPw] = useState("");
+  const [token, setToken] = useState("");
 
   useEffect(() => {
     validateToken((res) => {
@@ -19,7 +20,9 @@ export default function Login() {
   },[]);
 
   const login = (cb) => {
-    PostApiAsync("Auth/login", {username, password }, (data) => {
+    console.log("email : ", email);
+    console.log("pw : ", pw);
+    PostApiAsync("login", { email, pw }, (data) => {
       if (data.success) {
         localStorage.setItem("token", data.token);
         setToken(data.token);
@@ -44,7 +47,7 @@ export default function Login() {
       cb({ valid: false });
       return;
     }
-    GetApiAsync('Auth/validate?token=${savedToken}', {}, cb);
+    GetApiAsync('Validate?token=${savedToken}', {}, cb);
   }
 
   return (

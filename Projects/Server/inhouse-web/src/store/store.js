@@ -16,7 +16,7 @@ export const GlobalProvider = ({ children }) => {
       //console.log("url : ", url);
       const data = await fetch(url, {
         method: meth,
-        body: JSON.stringify({ request }),
+        body: JSON.stringify(request),
         headers: {
           'Content-Type': 'application/json'
         }
@@ -38,7 +38,6 @@ export const GlobalProvider = ({ children }) => {
 
   return (
     <GlobalContext.Provider value={{
-      scene, setScene,
       GetAdminServerUrl,
       PostApiAsync,
       GetApiAsync

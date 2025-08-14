@@ -70,7 +70,7 @@ namespace AdminApi.Controllers
         }
 
         [HttpPost]
-        public IActionResult Login([FromBody] LoginRequest req)
+        public IActionResult Login(AdminRequest.LoginData req)
         {
             // DB 검증
             if (req.Password == "123")
