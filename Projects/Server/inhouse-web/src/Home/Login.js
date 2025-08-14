@@ -7,7 +7,7 @@ export default function Login() {
   const { PostApiAsync, GetApiAsync } = useGlobalStore();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
-  const [pw, setPw] = useState("");
+  const [password, setPw] = useState("");
   const [token, setToken] = useState("");
 
   useEffect(() => {
@@ -21,8 +21,8 @@ export default function Login() {
 
   const login = (cb) => {
     console.log("email : ", email);
-    console.log("pw : ", pw);
-    PostApiAsync("login", { email, pw }, (data) => {
+    console.log("password : ", password);
+    PostApiAsync("login", { email, password }, (data) => {
       if (data.success) {
         localStorage.setItem("token", data.token);
         setToken(data.token);
@@ -71,7 +71,7 @@ export default function Login() {
             <input
               type="password"
               placeholder="Password"
-              value={pw}
+              value={password}
               onChange={(e) => setPw(e.target.value)}
               required
               className="login__input" />

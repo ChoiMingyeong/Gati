@@ -13,14 +13,17 @@ export const GlobalProvider = ({ children }) => {
   const InternalSendApiAsync = useCallback(async (apiUrl, meth, request, cb) => {
     try {
       const url = GetAdminServerUrl(apiUrl);
-      //console.log("url : ", url);
-      const data = await fetch(url, {
-        method: meth,
-        body: JSON.stringify(request),
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      }).then(res => res.json());
+
+      const options = {
+        method: meth.toUpperCase(),
+        headers: { 'Content-Type': 'application/json' }
+      };
+
+      if (options.method !== 'GET') {
+        options.body = JSON.stringify(request || {});
+      }
+
+      const data = await fetch(url, options).then(res => res.json());
       cb(data);
     } 
     catch (err) {
