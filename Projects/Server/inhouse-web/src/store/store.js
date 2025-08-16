@@ -6,6 +6,15 @@ const GlobalContext = createContext();
 export const GlobalProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem("token") || null);
 
+  const validateToken = (cb) => {
+    const savedToken = localStorage.getItem("token");
+    if (!savedToken) {
+      cb({ valid: false });
+      return;
+    }
+    GetApiAsync('Validate?token=${savedToken}', {}, cb);
+  }
+
   const GetAdminServerUrl = useCallback((apiUrl) => {
     return `https://${network.Host}:${network.Port}/InHouse/${apiUrl}`;
   }, []);
@@ -41,6 +50,7 @@ export const GlobalProvider = ({ children }) => {
 
   return (
     <GlobalContext.Provider value={{
+      validateToken,
       GetAdminServerUrl,
       PostApiAsync,
       GetApiAsync

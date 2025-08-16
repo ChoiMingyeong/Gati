@@ -73,6 +73,7 @@ namespace AdminApi.Controllers
         public IActionResult Login(AdminRequest.LoginData req)
         {
             // DB 검증
+
             if (req.Password == "123")
             {
                 return Ok(new { success = true, token = "123token" });

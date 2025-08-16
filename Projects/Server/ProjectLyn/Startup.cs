@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -12,6 +11,8 @@ using System.Collections.Generic;
 using System.Reflection;
 using System;
 using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
 namespace ProjectLyn
 {
@@ -27,6 +28,22 @@ namespace ProjectLyn
         public void ConfigureServices(IServiceCollection services)
         {
             Logger.Default.LogDebug("Start ConfigureServices");
+
+            // JWT 인증 적용
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,              // 발급자 유효성 검사
+                        ValidateAudience = true,            // 수신자 유효성 검사
+                        ValidateLifetime = true,            // 토큰 만료 시간 유효성 검사
+                        ValidateIssuerSigningKey = true,    // 발행 키 검증
+                        ValidIssuer = "your-issuer",        // 발급자 이름
+                        ValidAudience = "your-audience",    // 수신자 이름
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("your-secret-key"))  // 토큰 서명 키 설정
+                    };
+                });
 
             //For Browser Call Restfull API
             if (App.ContainAdminService)
@@ -110,7 +127,7 @@ namespace ProjectLyn
             app.UseStaticFiles();
             app.UseRouting();
             app.UseCors(); //web
-            app.UseAuthorization();
+            app.UseAuthorization(); // 권한 검사 수행
             app.UseEndpoints(builder =>
             {
                 builder.MapControllers();

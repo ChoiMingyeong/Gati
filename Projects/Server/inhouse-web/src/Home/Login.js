@@ -4,7 +4,7 @@ import { useGlobalStore } from "../store/store";
 import "./Login.css";
 
 export default function Login() {
-  const { PostApiAsync, GetApiAsync } = useGlobalStore();
+  const { PostApiAsync, GetApiAsync, validateToken } = useGlobalStore();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPw] = useState("");
@@ -40,15 +40,6 @@ export default function Login() {
       }
     })
   };
-
-  const validateToken = (cb) => {
-    const savedToken = localStorage.getItem("token");
-    if (!savedToken) {
-      cb({ valid: false });
-      return;
-    }
-    GetApiAsync('Validate?token=${savedToken}', {}, cb);
-  }
 
   return (
     <div className="login">
