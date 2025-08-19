@@ -6,13 +6,13 @@ const GlobalContext = createContext();
 export const GlobalProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem("token") || null);
 
+  // 토큰 검증
   const validateToken = (cb) => {
-    const savedToken = localStorage.getItem("token");
-    if (!savedToken) {
+    if (!token) {
       cb({ valid: false });
       return;
     }
-    GetApiAsync('Validate?token=${savedToken}', {}, cb);
+    GetApiAsync('Validate', {}, cb);
   }
 
   const GetAdminServerUrl = useCallback((apiUrl) => {
@@ -25,7 +25,9 @@ export const GlobalProvider = ({ children }) => {
 
       const options = {
         method: meth.toUpperCase(),
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json',
+          ...(token ? {'Authorization': `Bearer ${token}`} : {}) //JWT 추가
+         }
       };
 
       if (options.method !== 'GET') {
@@ -34,11 +36,10 @@ export const GlobalProvider = ({ children }) => {
 
       const data = await fetch(url, options).then(res => res.json());
       cb(data);
-    } 
-    catch (err) {
+    } catch (err) {
       alert(`SendAPIError | ${err}`);
     }
-  }, []);
+  }, [token]);
 
   const PostApiAsync = (apiUrl, request, cb) => {
     return InternalSendApiAsync(apiUrl, 'post', request, cb);
@@ -50,6 +51,8 @@ export const GlobalProvider = ({ children }) => {
 
   return (
     <GlobalContext.Provider value={{
+      token,
+      setToken,
       validateToken,
       GetAdminServerUrl,
       PostApiAsync,

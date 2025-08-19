@@ -15,7 +15,7 @@ namespace ServerLib
         private readonly JwtSecurityTokenHandler JwtTokenHandler = new JwtSecurityTokenHandler();
 
         // JWT 토큰 발급
-        private string CreateJwtToken(string name)
+        public string CreateJwtToken(string name)
         {
             var claims = new[]
             {
@@ -23,7 +23,7 @@ namespace ServerLib
                 new Claim(ClaimTypes.Role, "admin")
             };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("your-secret-key"));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("your-secret-key-test-12312312313"));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256); //SecurityAlgorithms 종류 확인
 
             var token = new JwtSecurityToken(

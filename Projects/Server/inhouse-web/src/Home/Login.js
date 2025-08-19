@@ -3,12 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import { useGlobalStore } from "../store/store";
 import "./Login.css";
 
+// XSS 방지용 간단 Sanitizer
+const sanitizeInput = (str) => {
+  return str.replace(/[<>"'`;(){}]/g, ""); 
+}
+
 export default function Login() {
-  const { PostApiAsync, GetApiAsync, validateToken } = useGlobalStore();
+  const { PostApiAsync, validateToken, setToken } = useGlobalStore();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPw] = useState("");
-  const [token, setToken] = useState("");
 
   useEffect(() => {
     validateToken((res) => {
@@ -20,12 +24,15 @@ export default function Login() {
   },[]);
 
   const login = (cb) => {
-    console.log("email : ", email);
-    console.log("password : ", password);
-    PostApiAsync("login", { email, password }, (data) => {
+    //console.log("email : ", email);
+    //console.log("password : ", password);
+    const safeEmail = sanitizeInput(email);
+    const safePw = sanitizeInput(password);
+
+    PostApiAsync("login", { email: safeEmail, password: safePw }, (data) => {
       if (data.success) {
         localStorage.setItem("token", data.token);
-        setToken(data.token);
+        setToken(data.token); // context state 반영
         navigate('/home/account');
       }
       cb(data);

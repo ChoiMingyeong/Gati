@@ -84,6 +84,7 @@ namespace ProjectLyn
 
             Logger.Default.LogDebug("Services {0}", serviceName);
 
+            ServerInitializer.InitAfterStartup(services, Configuration);
             CustomAttributeManager.ExecuteStaticMethod<InitializeConfigureServicesAttribute>(services);
 
             Logger.Default.LogDebug("Finished ConfigureServices");
