@@ -416,3 +416,34 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+# Unity generated files
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Mm]anifest.json
+
+# Visual Studio temporary files
+.vs/
+
+# Rider
+.idea/
+
+# Unity-specific
+*.csproj
+*.sln
+*.suo
+*.user
+*.userprefs
+*.unityproj
+*.booproj
+
+# macOS
+.DS_Store
+
+# OS generated files
+thumb.db
+Thumbs.db
+.localized

@@ -12,5 +12,11 @@ namespace AdminApi
         {
             public int Data { get; set; }
         }
+
+        public class LoginData
+        {
+            public string? Email { get; set; }
+            public string? Password { get; set; }
+        }
     }
 }
