@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<nlog xmlns="http://www.nlog-project.org/schemas/NLog.xsd"
+	  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	
+	<variable name="logDirectory" value="./logs"/>
+	<variable name="dateLayout" value="${date:universalTime=false:format=yyyy-MM-dd HH\:mm\:ss.ff}"/>
+	<variable name="activityLayout" value="${dateLayout}|${logger}:${uppercase:${level}}:${threadid}| ${message} |(${callsite-filename}:${callsite-linenumber})${when:when=length('${exception}')>0:Inner=${newline}}${exception:format=ToString,StackTrace}"/>
+	<variable name="rollingTime" value="Minute"/>
+	<targets async="true">
+		<target name="console" xsi:type="ColoredConsole" useDefaultRowHighlightingRules="false"
+				layout="${activityLayout}">
+		</target>
+		<target name="file" xsi:type="File"	fileName="${logFilePath}/app.log"
+				archiveFileName="${logDirectory}/app-archive/archive.{#}.log"
+				layout="${message}"
+				archiveEvery="Hour"
+				archiveAboveSize="10000000"
+				archiveNumbering="DateAndSequence"
+				archiveDateFormat="yyyyMMdd.HHmmss"
+				keepFileOpen="true">
+		</target>
+	</targets>
+	<!-- rules to map from logger name to target -->
+	<rules>
+		<!-- LogLevel : https://github.com/NLog/NLog/wiki/Configuration-file#log-levels -->
+		<logger name="*" minlevel="Warn" writeTo="database"/>
+		<logger name="Default" minlevel="Trace" writeTo="console, file" final="true"/>
+		<logger name="System" minlevel="Trace" writeTo="console, file" final="true"/>
+		<logger name="ServerSystem" minlevel="Trace" writeTo="console, file" final="true"/>
+	</rules>
+</nlog>
