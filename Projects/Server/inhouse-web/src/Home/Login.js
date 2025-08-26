@@ -14,15 +14,6 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPw] = useState("");
 
-  useEffect(() => {
-    validateToken((res) => {
-      if (res.valid) {
-        // 로그인 상태
-        navigate('/home/account');
-      }
-    });
-  },[]);
-
   const login = (cb) => {
     //console.log("email : ", email);
     //console.log("password : ", password);
