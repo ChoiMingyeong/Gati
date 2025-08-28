@@ -13,6 +13,7 @@ using System;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using GameApi;
 
 namespace ProjectLyn
 {
@@ -75,7 +76,7 @@ namespace ProjectLyn
                 var serviceAssemblies = serviceName.Split(',', StringSplitOptions.RemoveEmptyEntries);
                 foreach (var assemblyName in serviceAssemblies)
                 {
-                    Logger.Default.LogDebug("load api {0}", assemblyName);
+                    Logger.Default.LogDebug("Load Api {0}", assemblyName);
                     var serviceAssembly = Assembly.Load(assemblyName);
                     useAssemblies.Add(serviceAssembly);
                     mvcBuilder = mvcBuilder.AddApplicationPart(serviceAssembly);
@@ -83,6 +84,9 @@ namespace ProjectLyn
             }
 
             Logger.Default.LogDebug("Services {0}", serviceName);
+
+            // SignalR 서비스 등록
+            services.AddSignalR();
 
             ServerInitializer.InitAfterStartup(services, Configuration);
             CustomAttributeManager.ExecuteStaticMethod<InitializeConfigureServicesAttribute>(services);
@@ -131,6 +135,7 @@ namespace ProjectLyn
             app.UseAuthorization(); // 권한 검사 수행
             app.UseEndpoints(builder =>
             {
+                builder.MapHub<GameHub>("/game");   // 매핑
                 builder.MapControllers();
             });
 
