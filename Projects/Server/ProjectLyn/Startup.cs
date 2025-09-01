@@ -87,6 +87,7 @@ namespace ProjectLyn
 
             // SignalR 서비스 등록
             services.AddSignalR();
+            services.AddSingleton<SessionManager>();
 
             ServerInitializer.InitAfterStartup(services, Configuration);
             CustomAttributeManager.ExecuteStaticMethod<InitializeConfigureServicesAttribute>(services);
