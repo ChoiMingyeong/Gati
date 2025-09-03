@@ -14,6 +14,7 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using GameApi;
+using Newtonsoft.Json.Serialization;
 
 namespace ProjectLyn
 {
@@ -56,7 +57,13 @@ namespace ProjectLyn
                         .AllowAnyHeader();
                 }));
             }
-            services.AddControllers();
+
+            // REST API -> Newtonsoft.Json 사용
+            //services.AddControllers();
+            services.AddControllers().AddNewtonsoftJson(options =>
+            {
+                options.SerializerSettings.ContractResolver = new DefaultContractResolver();
+            });
 
             var mvcBuilder = services.AddMvc();
             var removeParts = new List<ApplicationPart>();
@@ -85,8 +92,12 @@ namespace ProjectLyn
 
             Logger.Default.LogDebug("Services {0}", serviceName);
 
-            // SignalR 서비스 등록
-            services.AddSignalR();
+            // SignalR 서비스 등록. SignalR -> MessagePack 사용
+            //services.AddSignalR();
+            services.AddSignalR().AddMessagePackProtocol(options =>
+            {
+                options.SerializerOptions = MessagePack.Resolvers.ContractlessStandardResolver.Options;
+            });
             services.AddSingleton<SessionManager>();
 
             ServerInitializer.InitAfterStartup(services, Configuration);
