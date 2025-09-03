@@ -27,16 +27,18 @@ namespace ServerLib
 
         public static void Init(string envName)
         {
-            var logFilePath = Path.Join(AppContext.BaseDirectory, $"AppConfig/nlog.{envName}.xml");
+            var logFilePath = Path.Combine(AppContext.BaseDirectory,"AppConfig", $"nlog.{envName}.xml");
             if (File.Exists(logFilePath) == false)
-                logFilePath = Path.Join(AppContext.BaseDirectory, $"AppConfig/nlog.xml");
+                logFilePath = Path.Combine(AppContext.BaseDirectory,"AppConfig", "nlog.xml");
 
-            _nLogFactory = NLog.Web.NLogBuilder.ConfigureNLog(logFilePath);
-            //_nlogSetupBuilder = NLog.LogManager.Setup().LoadConfigurationFromAppSettings(logFilePath);
+            // NLog 구성 로드
+            LogManager.Setup().LoadConfigurationFromFile(logFilePath);
+
+            // NLog Provider 등록
             _loggerFactory = LoggerFactory.Create(builder =>
             {
-                //builder.AddNLogWeb(_nlogSetupBuilder.LogFactory.Configuration);
-                builder.AddNLogWeb(_nLogFactory.Configuration);
+                builder.ClearProviders();
+                builder.AddNLog();
             });
 
             _default = LogFactory.CreateLogger("ServerSystem");

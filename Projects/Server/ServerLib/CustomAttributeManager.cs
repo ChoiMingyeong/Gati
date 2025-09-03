@@ -18,25 +18,68 @@ namespace ServerLib
                 MethodInfo = methodInfo;
             }
         }
+        private static bool IsFrameworkAssembly(Assembly assembly)
+        {
+            var name = assembly.GetName().Name ?? string.Empty;
+            return name.StartsWith("System.", StringComparison.OrdinalIgnoreCase)
+                || name.StartsWith("Microsoft.", StringComparison.OrdinalIgnoreCase)
+                || name.StartsWith("mscorlib", StringComparison.OrdinalIgnoreCase)
+                || name.StartsWith("netstandard", StringComparison.OrdinalIgnoreCase)
+                || name.StartsWith("Windows.", StringComparison.OrdinalIgnoreCase)
+                || name.Equals("Microsoft.AspNetCore.Server.IIS", StringComparison.OrdinalIgnoreCase)
+                || name.Equals("Microsoft.AspNetCore.Server.IISIntegration", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static IEnumerable<Type> GetLoadableTypes(Assembly assembly)
+        {
+            try
+            {
+                return assembly.GetTypes();
+            }
+            catch (ReflectionTypeLoadException ex)
+            {
+                // 문제타입만 빼고 진행
+                return ex.Types.Where(t => t != null)!;
+            }
+            catch
+            {
+                return Array.Empty<Type>();
+            }
+        }
+
         public static void ExecuteStaticMethod<T>(params object[] param)
         {
-            var reflectMethod = new List<MethodReflect>();
-            var scriptAssemblies =
-                AppDomain.CurrentDomain.GetAssemblies();
-            foreach (Assembly assembly in scriptAssemblies)
+            var result = new List<MethodInfo>();
+
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies()
+                .Where(a => a.IsDynamic == false)
+                .Where(a => string.IsNullOrEmpty(a.Location) == false)      // 위치없는 동적/리소스 어셈블리 제외
+                .Where(a => IsFrameworkAssembly(a) == false);               // 프레임워크/IIS 어셈블리 제외
+
+            foreach (var assembly in assemblies)
             {
-                var methodInfos = assembly.GetTypes().SelectMany(m =>
-                        m.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static))
-                    .Where(x => x.GetCustomAttributes(typeof(T), false).Length > 0);
-                reflectMethod.AddRange(methodInfos.Select(method => new MethodReflect(method)));
+                foreach (var type in GetLoadableTypes(assembly))
+                {
+                    IEnumerable<MethodInfo> methods;
+                    try
+                    {
+                        methods = type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
+                    }
+                    catch
+                    {
+                        continue;   // 타입 리플렉션 실패시 스킵
+                    }
+
+                    foreach (var m in methods)
+                    {
+                        if (m.GetCustomAttributes(typeof(T), inherit: false).Any())
+                            result.Add(m);
+                    }
+                }
             }
 
-            foreach (var reflect in reflectMethod)
-            {
-                var method = reflect.MethodInfo;
-                if (method != null)
-                    method.Invoke(null, param);
-            }
+            foreach (var method in result)
+                method.Invoke(null, param);
         }
     }
 }
