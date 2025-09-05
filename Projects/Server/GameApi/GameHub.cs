@@ -2,10 +2,11 @@
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 using ServerLib;
+using CommonLib;
 
 namespace GameApi
 {
-    public class GameHub : Hub
+    public partial class GameHub : Hub
     {
         private readonly SessionManager _sessionManager;
         public GameHub(SessionManager sessionManager)
@@ -22,15 +23,26 @@ namespace GameApi
             };
 
             _sessionManager.Add(session);
-            Logger.Default.LogDebug("[GameHub] Connected: {0} ({1})", session.UserId, session.ConnectionId);
             await base.OnConnectedAsync();
+            Logger.Default.LogTrace("[GameHub] Connected: {0} ({1})", session.UserId, session.ConnectionId);
         }
 
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
             bool result = _sessionManager.Remove(Context.ConnectionId);
-            Logger.Default.LogDebug("[GameHub] Disconnected: {0} ({1})", result, Context.ConnectionId);
             await base.OnDisconnectedAsync(exception);
+            Logger.Default.LogTrace("[GameHub] Disconnected: {0} ({1})", result, Context.ConnectionId);
+        }
+
+        public async Task<Response.UserInfo> Login(Request.LoginInfo info)
+        {
+            Logger.Default.LogTrace("[GameHub] Login {0} ", info.Id);
+
+            return new Response.UserInfo
+            {
+                Name = "testName",
+                Level = 0
+            };
         }
     }
 }
