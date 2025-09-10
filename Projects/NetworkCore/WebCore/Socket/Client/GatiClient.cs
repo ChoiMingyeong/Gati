@@ -28,6 +28,15 @@ namespace WebCore.Socket.Client
             _ = Task.Run(RouteLoopAsync);
         }
 
+        public void Connect(string uri)
+        {
+        }
+
+        public void Send<TPacket>(TPacket packet) where TPacket : IPacket
+        {
+            _socket.Send(packet);
+        }
+
         public async Task SendAsync<TPacket>(TPacket packet) where TPacket : IPacket
         {
             await _socket.SendAsync(packet);
