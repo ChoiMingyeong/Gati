@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Threading.Tasks;
+using UnityEngine;
 using WebCore.Socket.Client;
 
 namespace Assets.Scripts.Network
@@ -8,19 +9,23 @@ namespace Assets.Scripts.Network
         private GatiClient<DagaClientRouter> _gatiClient = new();
         public bool IsConnected => IsConnected;
 
-        private readonly string _address;
-
-        public DagaClient(string ip, int port)
+        public DagaClient()
         {
-            _gatiClient.ConnectAsync($"ws://{ip}:{port}/ws/").GetAwaiter();
         }
 
-        public void Send(string message)
+        [ContextMenu("Connect")]
+        public async Task ConnectAsync()
         {
-            _gatiClient.SendAsync(new TestCommon.Shared.C2S.RequestTest
+            await _gatiClient.ConnectAsync($"ws://localhost:5060/ws/");
+        }
+
+        [ContextMenu("Send")]
+        public async Task SendAsync()
+        {
+            await _gatiClient.SendAsync(new TestCommon.Shared.C2S.RequestTest
             {
-                Message = message
-            }).GetAwaiter();
+                Message = "Test"
+            });
         }
     }
 }

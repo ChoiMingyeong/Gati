@@ -1,8 +1,9 @@
-﻿namespace TestCommon.Shared.S2C;
-
-public enum ResponseCode
+﻿namespace TestCommon.Shared.S2C
 {
-    Success = 0,
-    Error = 1,
+    public enum ResponseCode
+    {
+        Success = 0,
+        Error = 1,
 
+    }
 }

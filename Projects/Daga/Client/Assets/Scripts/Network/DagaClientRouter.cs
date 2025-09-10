@@ -15,11 +15,8 @@ namespace Assets.Scripts.Network
         }
 
         [PacketHandler]
-        private Task HandleResponseTest(ResponseTest packet)
+        private async Task HandleResponseTest(ResponseTest packet)
         {
-            Console.WriteLine(packet.ResponseCode);
-            Debug.Write(packet.ResponseCode);
-            return Task.CompletedTask;
         }
     }
 }
