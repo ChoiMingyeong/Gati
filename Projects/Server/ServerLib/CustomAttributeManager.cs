@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -79,7 +80,20 @@ namespace ServerLib
             }
 
             foreach (var method in result)
-                method.Invoke(null, param);
+            {
+                try
+                {
+                    method.Invoke(null, param);
+                }
+                catch (TargetInvocationException ex)
+                {
+                    Logger.Default.LogError(ex.InnerException ?? ex, "[AttrInvoke] {0}", method.Name);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Default.LogError(ex, "[AttrInvoke] {0}", method.Name);
+                }
+            }
         }
     }
 }

@@ -34,6 +34,12 @@ namespace GameApi
             Logger.Default.LogTrace("[GameHub] Disconnected: {0} ({1})", result, Context.ConnectionId);
         }
 
+        public Task Ping()
+        {
+            _sessionManager.Touch(Context.ConnectionId);    // 갱신
+            return Task.CompletedTask;
+        }
+
         public async Task<Response.UserInfo> Login(Request.LoginInfo info)
         {
             Logger.Default.LogTrace("[GameHub] Login {0} ", info.Id);

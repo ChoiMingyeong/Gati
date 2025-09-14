@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using GameApi;
 using Newtonsoft.Json.Serialization;
+using Microsoft.AspNetCore.Http;
 
 namespace ProjectLyn
 {
@@ -93,12 +94,18 @@ namespace ProjectLyn
             Logger.Default.LogDebug("Services {0}", serviceName);
 
             // SignalR 서비스 등록. SignalR -> MessagePack 사용
-            //services.AddSignalR();
-            services.AddSignalR().AddMessagePackProtocol(options =>
+            services.AddSignalR(options =>
             {
-                options.SerializerOptions = MessagePack.Resolvers.ContractlessStandardResolver.Options;
+                options.MaximumReceiveMessageSize = 64 * 1024;              // 64KB (GC LOH(85KB+) 방지)
+                options.KeepAliveInterval = TimeSpan.FromSeconds(15);       // 15초마다 ping 전송
+                options.ClientTimeoutInterval = TimeSpan.FromSeconds(60);   // 60초 응답 없으면 끊김으로 간주주
+
+            }).AddMessagePackProtocol(options =>
+            {
+                options.SerializerOptions = MessagePackConfig.Options;
             });
             services.AddSingleton<SessionManager>();
+            services.AddSingleton<Microsoft.AspNetCore.SignalR.IHubFilter, GameApi.Filters.SafeHubFilter>();
 
             ServerInitializer.InitAfterStartup(services, Configuration);
             CustomAttributeManager.ExecuteStaticMethod<InitializeConfigureServicesAttribute>(services);
@@ -130,11 +137,14 @@ namespace ProjectLyn
                     // the client.
                     if (exceptionHandlerPathFeature != null)
                     {
-                        var error = exceptionHandlerPathFeature.Error.ToString();
-                        Logger.Default.LogError(error);
-                        var xmlBytes = Encoding.ASCII.GetBytes(error);
-                        await context.Response.Body.WriteAsync(xmlBytes);
-                    }
+                        var error = exceptionHandlerPathFeature.Error;
+                        Logger.Default.LogError(error, "Unhandled");
+
+                        if (env.IsDevelopment())
+                            await context.Response.WriteAsync(error.ToString());
+                        else
+                            await context.Response.WriteAsync("{\"error\":\"Internal Server Error\"}");
+                    }                   
                 });
             });
 
@@ -143,7 +153,12 @@ namespace ProjectLyn
             //app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseRouting();
-            app.UseCors(); //web
+
+            if (App.ContainAdminService)
+            {
+                app.UseCors(); //web
+            }
+
             app.UseAuthorization(); // 권한 검사 수행
             app.UseEndpoints(builder =>
             {
