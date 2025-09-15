@@ -1,0 +1,26 @@
+version: "3.9"
+
+services:
+    api:
+        build: ./Server
+        ports:
+            - "5000:8080" #HTTP
+            - "5001:8081" #HTTPS
+        environment:
+            - ASPNETCORE_ENVIRONMENT=Development
+        depends_on:
+            - db
+
+    db:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        container_name: gameplatform_db
+        environment:
+            SA_PASSWORD: "PLF!LynPassw0rd"
+            ACCEPT_EULA: "Y"
+        ports:
+            - "1433:1433"
+        volumes:
+            - sql_data:/var/opt/mssql
+
+volumes:
+    sql_data:
