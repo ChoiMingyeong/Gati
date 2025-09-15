@@ -23,7 +23,7 @@ namespace GameApi
             };
 
             _sessionManager.Add(session);
-            // 단일 로그인 정책: 동일 유저가 이미 접속 중이면 이전 연결에 강제 로그아웃 통지
+            // 중복 접속할 경우 이전 연결에 강제 로그아웃 통지
             var prev = _sessionManager.GetConnByUser(session.UserId);
             if (prev != null && prev != Context.ConnectionId)
             {
@@ -36,7 +36,6 @@ namespace GameApi
 
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
-            // 언바인딩: UserId를 알 수 있으면 해제
             var s = _sessionManager.Get(Context.ConnectionId);
             if (s != null)
             {

@@ -1,6 +1,8 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Authentication;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -16,6 +18,16 @@ namespace ServerLib
         {
             Instance = this;
             Token = token; 
+        }
+
+        public static ServerRequest.ServerInfo GetServerInfo()
+        {
+            return new ServerRequest.ServerInfo()
+            {
+                MachineName = Dns.GetHostName(),
+                ServiceApi = App.Services,
+                Now = DateTime.UtcNow,
+            };
         }
     }
 }
