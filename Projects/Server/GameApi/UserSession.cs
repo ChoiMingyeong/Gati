@@ -13,14 +13,14 @@ namespace GameApi
         public string ConnectionId { get; set; } = string.Empty;
         public string UserId { get; set; } = string.Empty; // 계정 ID
         public DateTime ConnectedAt { get; set; } = DateTime.UtcNow;
+        public DateTime LastActive { get; set; } = DateTime.UtcNow;
 
     }
 
     public class SessionManager
     {
-        public Datetime LastActive { get; set; } = DateTime.UtcNow;
-
-        private readonly ConcurrentDictionary<string, UserSession> _sessions = new();
+        private readonly ConcurrentDictionary<string, UserSession> _sessions = new(); // ConnectionId, UserSession
+        private readonly ConcurrentDictionary<string, string> _userToConn = new(); // UserId, ConnectionId
         public bool Add(UserSession session) => _sessions.TryAdd(session.ConnectionId, session);
 
         public bool Remove(string connectionId) => _sessions.TryRemove(connectionId, out _);
@@ -33,6 +33,25 @@ namespace GameApi
             {
                 session.LastActive = DateTime.UtcNow;
             }
+        }
+
+        public string? GetConnByUser(string userId)
+        {
+            return _userToConn.TryGetValue(userId, out var connId) ? connId : null;
+        }
+
+        public void BindUser(string userId, string connectionId)
+        {
+            _userToConn[userId] = connectionId;
+            if (_sessions.TryGetValue(connectionId, out var session))
+                session.UserId = userId;
+        }
+
+        public void UnbindUser(string userId, string connectionId)
+        {
+            _userToConn.TryGetValue(userId, out var current);
+            if (current == connectionId)
+                _userToConn.TryRemove(new KeyValuePair<string, string>(userId, connectionId));
         }
     }
 }
