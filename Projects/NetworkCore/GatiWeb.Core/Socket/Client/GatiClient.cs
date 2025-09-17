@@ -1,7 +1,7 @@
-﻿using System.Net.WebSockets;
-using WebCore.Packet;
+﻿using GatiWeb.Core.Packet;
+using System.Net.WebSockets;
 
-namespace WebCore.Socket.Client
+namespace GatiWeb.Core.Socket.Client
 {
     public class GatiClient<TRouter> where TRouter : IClientPacketRouter
     {

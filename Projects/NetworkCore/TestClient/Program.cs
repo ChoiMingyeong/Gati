@@ -1,5 +1,5 @@
-﻿using TestCommon.Shared.C2S;
-using WebCore.Socket.Client;
+﻿using GatiWeb.Core.Socket.Client;
+using TestCommon.Shared.C2S;
 
 namespace TestClient
 {
@@ -9,7 +9,7 @@ namespace TestClient
         {
             GatiClient<TestClientRouter> client = new();
 
-            await client.ConnectAsync("ws://localhost:8080/ws/");
+            await client.ConnectAsync("ws://localhost:5060/ws/");
 
             while (true)
             {

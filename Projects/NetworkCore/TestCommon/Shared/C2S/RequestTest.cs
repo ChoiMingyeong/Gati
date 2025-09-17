@@ -1,5 +1,5 @@
-﻿using MemoryPack;
-using WebCore.Packet;
+﻿using GatiWeb.Core.Packet;
+using MemoryPack;
 
 namespace TestCommon.Shared.C2S
 {

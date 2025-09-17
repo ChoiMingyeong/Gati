@@ -1,4 +1,4 @@
-﻿using WebCore.Socket.Server;
+﻿using GatiWeb.Core.Socket.Server;
 
 namespace TestServer
 {

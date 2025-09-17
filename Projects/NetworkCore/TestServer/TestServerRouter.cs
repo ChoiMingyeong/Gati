@@ -1,7 +1,7 @@
-﻿using TestCommon.Shared.C2S;
+﻿using GatiWeb.Core.Packet;
+using GatiWeb.Core.Socket.Server;
+using TestCommon.Shared.C2S;
 using TestCommon.Shared.S2C;
-using WebCore.Packet;
-using WebCore.Socket.Server;
 
 namespace TestServer
 {

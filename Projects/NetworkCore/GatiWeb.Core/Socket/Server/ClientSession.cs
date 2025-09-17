@@ -1,9 +1,8 @@
-﻿using MemoryPack;
+﻿using GatiWeb.Core.Packet;
 using System.Net.WebSockets;
 using TSID.Creator.NET;
-using WebCore.Packet;
 
-namespace WebCore.Socket.Server;
+namespace GatiWeb.Core.Socket.Server;
 
 public class ClientSession
 {

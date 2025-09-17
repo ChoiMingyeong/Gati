@@ -1,11 +1,11 @@
-﻿using MemoryPack;
+﻿using GatiWeb.Core.Packet;
+using MemoryPack;
 using System.Buffers;
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.WebSockets;
-using WebCore.Packet;
 
-namespace WebCore.Socket
+namespace GatiWeb.Core.Socket
 {
     public class GatiSocket
     {

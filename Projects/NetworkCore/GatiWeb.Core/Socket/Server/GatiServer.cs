@@ -1,10 +1,10 @@
-﻿using System.Collections.Concurrent;
+﻿using GatiWeb.Core.Packet;
+using System.Collections.Concurrent;
 using System.Net;
 using System.Net.WebSockets;
 using TSID.Creator.NET;
-using WebCore.Packet;
 
-namespace WebCore.Socket.Server
+namespace GatiWeb.Core.Socket.Server
 {
     public class GatiServer<TRouter> where TRouter : IServerPacketRouter
     {
