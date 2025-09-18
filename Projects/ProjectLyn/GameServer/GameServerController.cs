@@ -1,7 +1,10 @@
 ﻿using GameApi;
 using Microsoft.AspNetCore.Mvc;
 using ServerLib;
+using ServerLib.Model;
+using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace ProjectLyn
 {
@@ -10,9 +13,11 @@ namespace ProjectLyn
     public class GameServerController : ControllerBase
     {
         private readonly SessionManager _sessions;
-        public GameServerController(SessionManager sessions)
+        private readonly AuthContext _auth;
+        public GameServerController(SessionManager sessions, AuthContext auth)
         {
             _sessions = sessions;
+            _auth = auth;
         }
 
         [HttpGet]
@@ -39,6 +44,18 @@ namespace ProjectLyn
         public IActionResult GetServerHeartbeat()
         {
             return Ok();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> DbHealth()
+        {
+            var canConnect = await _auth.Database.CanConnectAsync();
+            int accountCount = 0;
+            if (canConnect)
+            {
+                accountCount = await _auth.Set<account>().CountAsync();
+            }
+            return Ok(new { canConnect, accountCount });
         }
     }
 }

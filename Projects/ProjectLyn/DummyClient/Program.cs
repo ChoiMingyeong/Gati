@@ -52,7 +52,8 @@ namespace DummyClient
             }
             var res = await connection.InvokeAsync<Response.UserInfo>("Login", new Request.LoginInfo()
             {
-                Id = connection.ConnectionId
+                ConnectionId = connection.ConnectionId,
+                UserEmail = "TestEmail@naver"
             });
 
             Console.WriteLine($"Login Response Name : {res.Name} Level : {res.Level}");

@@ -16,6 +16,9 @@ using Microsoft.IdentityModel.Tokens;
 using GameApi;
 using Newtonsoft.Json.Serialization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace ProjectLyn
 {
@@ -106,6 +109,27 @@ namespace ProjectLyn
             });
             services.AddSingleton<SessionManager>();
             services.AddSingleton<Microsoft.AspNetCore.SignalR.IHubFilter, GameApi.Filters.SafeHubFilter>();
+
+            // MySQL DbContext 등록 (Game)
+            services.AddDbContext<UserContext>(options =>
+            {
+                var connectionString = Configuration.GetConnectionString("Game") ?? Configuration.GetConnectionString("Default");
+                var serverVersion = new MySqlServerVersion(new Version(8, 0, 36));
+                options.UseMySql(connectionString, serverVersion);
+            });
+
+            // MySQL DbContext 등록 (Auth)
+            services.AddDbContext<AuthContext>(options =>
+            {
+                var connectionString = Configuration.GetConnectionString("Auth") ?? Configuration.GetConnectionString("Default");
+                var serverVersion = new MySqlServerVersion(new Version(8, 0, 36));
+                options.UseMySql(connectionString, serverVersion);
+            });
+
+            // Repository 및 DbService 등록
+            services.AddScoped<AuthRepository>();
+            services.AddScoped<GameRepository>();
+            services.AddScoped<DbService>();
 
             ServerInitializer.InitAfterStartup(services, Configuration);
             CustomAttributeManager.ExecuteStaticMethod<InitializeConfigureServicesAttribute>(services);

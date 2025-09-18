@@ -8,7 +8,9 @@ namespace CommonLib
         public class LoginInfo
         {
             [Key(0)]
-            public string? Id { get; set; }
+            public string? ConnectionId { get; set; }
+            [Key(1)]
+            public string? UserEmail { get; set; }
         }
     }
 }
