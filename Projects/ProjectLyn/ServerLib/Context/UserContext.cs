@@ -21,7 +21,7 @@ namespace ServerLib
 				entity.HasKey(e => e.Id);
 				entity.Property(e => e.Id).HasColumnName("Id");
 				entity.Property(e => e.UserName).HasColumnName("UserName").HasMaxLength(50).IsRequired();
-                entity.Property(e => e.LoginTime).HasColumnName("LoginTime").HasMaxLength(50).IsRequired();
+                entity.Property(e => e.LoginTime).HasColumnName("LoginTime");
                 entity.Property(e => e.Exp).HasColumnName("Exp");
 			});
         }

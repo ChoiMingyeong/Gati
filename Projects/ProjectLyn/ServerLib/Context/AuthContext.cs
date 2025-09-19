@@ -20,7 +20,7 @@ namespace ServerLib
 				entity.ToTable("auth");
 				entity.HasKey(e => e.Id);
 				entity.Property(e => e.Id).HasColumnName("Id");
-				entity.Property(e => e.UserId).HasColumnName("UserId").HasMaxLength(50).IsRequired();
+				entity.Property(e => e.UserId).HasColumnName("UserId").IsRequired();
 				entity.Property(e => e.UserEmail).HasColumnName("UserEmail").HasMaxLength(255).IsRequired();
 				entity.HasIndex(e => e.UserId).IsUnique();
 				entity.HasIndex(e => e.UserEmail).IsUnique();

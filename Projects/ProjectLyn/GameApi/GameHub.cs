@@ -58,31 +58,49 @@ namespace GameApi
 
         public async Task<Response.UserInfo> Login(Request.LoginInfo info)
         {
-            Logger.Default.LogTrace("[GameHub] Login {0} {1} ", info.ConnectionId, info.UserEmail);
-
-            // DB에서 사용자 정보 조회
-            var auth = await _db.Auth.GetAuthByEmail(info.UserEmail);
-            if (auth == null)
+            try
             {
-                // 사용자가 없으면 기본 정보로 응답
+                Logger.Default.LogTrace("[GameHub] Login {0} {1} ", info.ConnectionId, info.UserEmail);
+
+                // DB에서 사용자 정보 조회
+                var auth = await _db.Auth.GetAuthByEmail(info.UserEmail);
+                if (auth == null)
+                {
+                    // 사용자가 없으면 기본 정보로 응답
+                    return new Response.UserInfo
+                    {
+                        Name = "Guest",
+                        Level = 0
+                    };
+                }
+
+                var account = await _db.Game.GetAccountByUserId(auth.UserId);
+                if (account == null)
+                {
+                    // 계정이 없으면 기본 정보로 응답
+                    return new Response.UserInfo
+                    {
+                        Name = "Guest",
+                        Level = 0
+                    };
+                }
+
+                return new Response.UserInfo
+                {
+                    Name = account.UserName ?? "Unknown",
+                    Level = 1 // 실제로는 게임 데이터에서 가져와야 함
+                };
+            }
+            catch (Exception ex)
+            {
+                Logger.Default.LogError(ex, "[GameHub] Login error for {0}", info.UserEmail);
+                // 예외 발생 시 기본 정보로 응답
                 return new Response.UserInfo
                 {
                     Name = "Guest",
                     Level = 0
                 };
             }
-
-            var account = await _db.Game.GetAccountByUserId(auth.UserId);
-            if (account == null)
-            {
-                return null; // TODO : 값 리턴할때 성공실패 status도 전송하게 수정
-            }
-
-            return new Response.UserInfo
-            {
-                Name = account.UserName,
-                Level = 1 // 실제로는 게임 데이터에서 가져와야 함
-            };
         }
     }
 }
