@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Microsoft.Extensions.Caching.Distributed;
+using StackExchange.Redis;
 
 namespace ProjectLyn
 {
@@ -130,6 +131,26 @@ namespace ProjectLyn
             services.AddScoped<AuthRepository>();
             services.AddScoped<GameRepository>();
             services.AddScoped<DbService>();
+
+            // Redis 서비스 등록
+            services.AddSingleton<IConnectionMultiplexer>(sp =>
+            {
+                var redisConfig = Configuration.GetSection("Redis").GetValue<string>("Configuration") 
+                    ?? "localhost:6379,defaultDatabase=0,abortConnect=false";
+                return ConnectionMultiplexer.Connect(redisConfig);
+            });
+
+            // Redis Cache 등록
+            services.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration = Configuration.GetSection("Redis").GetValue<string>("Configuration") 
+                    ?? "localhost:6379,defaultDatabase=0,abortConnect=false";
+                options.InstanceName = Configuration.GetSection("Redis").GetValue<string>("InstanceName") 
+                    ?? "GameServer:";
+            });
+
+            // Redis 서비스 등록
+            services.AddScoped<RedisService>();
 
             ServerInitializer.InitAfterStartup(services, Configuration);
             CustomAttributeManager.ExecuteStaticMethod<InitializeConfigureServicesAttribute>(services);

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using ServerLib;
 using ServerLib.Model;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -14,10 +15,14 @@ namespace ProjectLyn
     {
         private readonly SessionManager _sessions;
         private readonly AuthContext _auth;
-        public GameServerController(SessionManager sessions, AuthContext auth)
+        private readonly UserContext _game;
+        private readonly RedisService _redis;
+        public GameServerController(SessionManager sessions, AuthContext auth, UserContext game, RedisService redis)
         {
             _sessions = sessions;
             _auth = auth;
+            _game = game;
+            _redis = redis;
         }
 
         [HttpGet]
@@ -49,13 +54,62 @@ namespace ProjectLyn
         [HttpGet]
         public async Task<IActionResult> DbHealth()
         {
-            var canConnect = await _auth.Database.CanConnectAsync();
-            int accountCount = 0;
-            if (canConnect)
+            var authCanConnect = await _auth.Database.CanConnectAsync();
+            var gameCanConnect = await _game.Database.CanConnectAsync();
+            
+            int authCount = 0;
+            int gameCount = 0;
+            
+            if (authCanConnect)
             {
-                accountCount = await _auth.Set<account>().CountAsync();
+                authCount = await _auth.Set<auth>().CountAsync();
             }
-            return Ok(new { canConnect, accountCount });
+            
+            if (gameCanConnect)
+            {
+                gameCount = await _game.Set<account>().CountAsync();
+            }
+            
+            return Ok(new { 
+                authCanConnect, 
+                gameCanConnect,
+                authCount,
+                gameCount
+            });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> RedisHealth()
+        {
+            try
+            {
+                var isConnected = _redis.IsConnected();
+                var connectionStatus = _redis.GetConnectionStatus();
+                
+                // Redis 연결 테스트
+                var testKey = "health_check";
+                var testValue = DateTime.UtcNow.ToString();
+                await _redis.SetAsync(testKey, testValue, TimeSpan.FromSeconds(10));
+                var retrievedValue = await _redis.GetAsync(testKey);
+                var testPassed = retrievedValue == testValue;
+                
+                return Ok(new { 
+                    isConnected, 
+                    connectionStatus, 
+                    testPassed,
+                    testValue,
+                    retrievedValue
+                });
+            }
+            catch (Exception ex)
+            {
+                return Ok(new { 
+                    isConnected = false, 
+                    connectionStatus = "Error", 
+                    testPassed = false,
+                    error = ex.Message
+                });
+            }
         }
     }
 }
