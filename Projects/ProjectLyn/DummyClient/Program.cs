@@ -50,15 +50,42 @@ namespace DummyClient
                 Console.WriteLine($"Failed to connect: {ex}");
                 return;
             }
-            var res = await connection.InvokeAsync<Response.UserInfo>("Login", new Request.LoginInfo()
+
+            while (true)
             {
-                ConnectionId = connection.ConnectionId,
-                UserEmail = "TestEmail@naver"
-            });
+                Console.WriteLine("=== DummyClient Login ===");
+                Console.Write("이메일을 입력하세요 (종료하려면 'exit' 입력): ");
+                var userInput = Console.ReadLine();
 
-            Console.WriteLine($"Login Response Name : {res.Name} Level : {res.Level}");
+                if (string.IsNullOrEmpty(userInput) || userInput.ToLower() == "exit")
+                {
+                    Console.WriteLine("프로그램을 종료합니다");
+                    break;
+                }
 
-            Console.ReadLine();
+                try
+                {
+                    Console.WriteLine($"로그인 시도 중... [{userInput}]");
+                    
+                    var loginRequest = new Request.LoginInfo()
+                    {
+                        ConnectionId = connection.ConnectionId,
+                        UserEmail = userInput
+                    };
+
+                    var res = await connection.InvokeAsync<Response.UserInfo>("Login", loginRequest);
+
+                    Console.WriteLine("로그인 성공");
+                    Console.WriteLine($"이름: {res.Name}");
+                    Console.WriteLine($"레벨: {res.Level}");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"로그인 실패: {ex.Message}");
+                }
+            }
+
+            await connection.DisposeAsync();
         }
     }
 }
