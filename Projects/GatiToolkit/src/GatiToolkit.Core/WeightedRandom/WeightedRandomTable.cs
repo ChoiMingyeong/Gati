@@ -109,6 +109,13 @@
             return row.ID;
         }
 
+        public uint[] AddRows(params uint[] weights)
+        {
+            List<uint> ids = [];
+            weights.ToList().ForEach(weight => ids.Add(AddRow(weight)));
+            return [.. ids];
+        }
+
         public bool RemoveRow(uint id)
         {
             return Rows.Remove(id);
