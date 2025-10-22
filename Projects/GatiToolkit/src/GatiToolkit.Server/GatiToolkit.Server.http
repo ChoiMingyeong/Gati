@@ -1,0 +1,6 @@
+@GatiToolkit.Server_HostAddress = http://localhost:5295
+
+GET {{GatiToolkit.Server_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
