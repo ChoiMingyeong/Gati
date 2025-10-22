@@ -77,6 +77,30 @@ namespace GatiToolkit.Server.Controllers
             return Ok(table.AddRow(weight));
         }
 
+        [HttpPatch("name")]
+        public IActionResult ChangeName([FromQuery] Guid tableID, [FromBody] string name)
+        {
+            var table = _weightedRandomTables.SingleOrDefault(t => t.ID == tableID);
+            if (table == null)
+            {
+                return NotFound();
+            }
+            table.Name = name;
+            return Ok();
+        }
+
+        [HttpPatch("description")]
+        public IActionResult ChangeDescription([FromQuery] Guid tableID, [FromBody] string description)
+        {
+            var table = _weightedRandomTables.SingleOrDefault(t => t.ID == tableID);
+            if (table == null)
+            {
+                return NotFound();
+            }
+            table.Description = description;
+            return Ok();
+        }
+
         [HttpGet("pick")]
         public IActionResult Pick([FromQuery] Guid tableID, [FromQuery] int count)
         {
