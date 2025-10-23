@@ -1,16 +1,10 @@
 ﻿namespace GatiToolkit.Core.WeightedRandom
 {
-    public class WeightedRandomTable
+    public class WeightedRandomTable : ItemBase
     {
-        public Guid ID { get; init; }
-
-        public string Name { get; set; } = string.Empty;
-
         public Dictionary<uint, WeightedRandomItem> Rows { get; set; } = [];
 
         private uint _rowIDCounter = 1;
-
-        public string Description { get; set; } = string.Empty;
 
         public uint MinWeight { get; set; } = 1;
 
@@ -34,9 +28,8 @@
             }
         }
 
-        public WeightedRandomTable(Guid id, params uint[] weights)
+        public WeightedRandomTable(params uint[] weights)
         {
-            ID = id;
             foreach (var weight in weights)
             {
                 AddRow(weight);
@@ -116,19 +109,19 @@
             return [.. ids];
         }
 
-        public bool RemoveRow(uint id)
+        public bool RemoveRow(uint rowID)
         {
-            return Rows.Remove(id);
+            return Rows.Remove(rowID);
         }
 
-        public void ChangeWeight(uint id, uint newWeight)
+        public void ChangeWeight(uint rowID, uint newWeight)
         {
-            if (false == Rows.ContainsKey(id))
+            if (false == Rows.ContainsKey(rowID))
             {
                 return;
             }
 
-            Rows[id].Weight = (newWeight < MinWeight) ? MinWeight : newWeight;
+            Rows[rowID].Weight = (newWeight < MinWeight) ? MinWeight : newWeight;
         }
 
         public void ChangeWeights(IReadOnlyDictionary<uint, uint> newWeights)

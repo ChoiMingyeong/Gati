@@ -1,5 +1,6 @@
 using GatiToolkit.Core.WeightedRandom;
 using Microsoft.AspNetCore.Mvc;
+using TSID.Creator.NET;
 
 namespace GatiToolkit.Server.Controllers
 {
@@ -23,7 +24,7 @@ namespace GatiToolkit.Server.Controllers
         }
 
         [HttpGet("table")]
-        public IActionResult GetTable([FromQuery] Guid id)
+        public IActionResult GetTable([FromQuery] string id)
         {
             var table = _weightedRandomTables.SingleOrDefault(t => t.ID == id);
             if (table == null)
@@ -36,13 +37,13 @@ namespace GatiToolkit.Server.Controllers
         [HttpPut("table")]
         public IActionResult CreateTable()
         {
-            var newTable = new WeightedRandomTable(Guid.NewGuid());
+            var newTable = new WeightedRandomTable();
             _weightedRandomTables.Add(newTable);
             return Ok(newTable);
         }
 
         [HttpDelete("table")]
-        public IActionResult DeleteTable([FromQuery] Guid id)
+        public IActionResult DeleteTable([FromQuery] string id)
         {
             var table = _weightedRandomTables.SingleOrDefault(t => t.ID == id);
             if (table == null)
@@ -54,7 +55,7 @@ namespace GatiToolkit.Server.Controllers
         }
 
         [HttpPut("rows")]
-        public IActionResult AddRows([FromQuery] Guid tableID, [FromBody] uint[] weights)
+        public IActionResult AddRows([FromQuery] string tableID, [FromBody] uint[] weights)
         {
             var table = _weightedRandomTables.SingleOrDefault(t => t.ID == tableID);
             if (table == null)
@@ -66,7 +67,7 @@ namespace GatiToolkit.Server.Controllers
         }
 
         [HttpPut("row")]
-        public IActionResult AddRow([FromQuery] Guid tableID, [FromBody] uint weight)
+        public IActionResult AddRow([FromQuery] string tableID, [FromBody] uint weight)
         {
             var table = _weightedRandomTables.SingleOrDefault(t => t.ID == tableID);
             if (table == null)
@@ -78,31 +79,43 @@ namespace GatiToolkit.Server.Controllers
         }
 
         [HttpPatch("name")]
-        public IActionResult ChangeName([FromQuery] Guid tableID, [FromBody] string name)
+        public IActionResult ChangeName([FromQuery] string tableID, [FromBody] string name)
         {
             var table = _weightedRandomTables.SingleOrDefault(t => t.ID == tableID);
             if (table == null)
             {
                 return NotFound();
             }
-            table.Name = name;
+            table.ChangeName(name);
             return Ok();
         }
 
         [HttpPatch("description")]
-        public IActionResult ChangeDescription([FromQuery] Guid tableID, [FromBody] string description)
+        public IActionResult ChangeDescription([FromQuery] string tableID, [FromBody] string description)
         {
             var table = _weightedRandomTables.SingleOrDefault(t => t.ID == tableID);
             if (table == null)
             {
                 return NotFound();
             }
-            table.Description = description;
+            table.ChangeDescription(description);
+            return Ok();
+        }
+
+        [HttpPatch("rows")]
+        public IActionResult ChangeRows([FromQuery] string tableID, [FromBody] Dictionary<uint, uint> weights)
+        {
+            var table = _weightedRandomTables.SingleOrDefault(t => t.ID == tableID);
+            if (table == null)
+            {
+                return NotFound();
+            }
+            table.ChangeWeights(weights);
             return Ok();
         }
 
         [HttpGet("pick")]
-        public IActionResult Pick([FromQuery] Guid tableID, [FromQuery] int count)
+        public IActionResult Pick([FromQuery] string tableID, [FromQuery] int count)
         {
             var table = _weightedRandomTables.SingleOrDefault(t => t.ID == tableID);
             if (table == null)
@@ -110,6 +123,17 @@ namespace GatiToolkit.Server.Controllers
                 return NotFound();
             }
             return Ok(table.Pick(count));
+        }
+
+        [HttpGet("rates")]
+        public IActionResult GetRates([FromQuery] string tableID)
+        {
+            var table = _weightedRandomTables.SingleOrDefault(t => t.ID == tableID);
+            if (table == null)
+            {
+                return NotFound();
+            }
+            return Ok(table.Rates);
         }
     }
 }
