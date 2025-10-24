@@ -26,5 +26,10 @@
             _dateTimes.Add(dateTime1);
             _dateTimes.Add(dateTime2);
         }
+
+        public bool IsInSchedule(DateTime dateTime)
+        {
+            return (dateTime >= StartDate && dateTime <= EndDate);
+        }
     }
 }

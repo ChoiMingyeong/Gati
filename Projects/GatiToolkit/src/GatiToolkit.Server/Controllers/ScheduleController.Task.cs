@@ -1,19 +1,19 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using GatiToolkit.Shared.DTO;
+using Microsoft.AspNetCore.Mvc;
 
 namespace GatiToolkit.Server.Controllers
 {
     public partial class ScheduleController
     {
         [HttpGet("tasks")]
-        public IActionResult GetTasks([FromQuery] string calendarID, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
+        public IActionResult GetTasks([FromQuery] string calendarID)
         {
             var calendar = GetScheduleCalendar(calendarID);
             if (calendar == null)
             {
                 return NotFound();
             }
-            var tasks = calendar.GetTasks(startDate, endDate);
-            return Ok(tasks);
+            return Ok(calendar.Tasks);
         }
 
         [HttpGet("task")]
@@ -28,38 +28,71 @@ namespace GatiToolkit.Server.Controllers
         }
 
         [HttpPut("task")]
-        public IActionResult AddTask([FromQuery] string calendarID, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
+        public IActionResult AddTask([FromBody] CreateScheduleTaskRequest request)
         {
-            var calendar = GetScheduleCalendar(calendarID);
+            var calendar = GetScheduleCalendar(request.CalendarID);
             if (calendar == null)
             {
                 return NotFound();
             }
-            return Ok(calendar.AddTask(startDate, endDate));
+
+            List<string> newTasks = [];
+            TimeSpan duration = TimeSpan.Zero;
+            switch (request.RepeatType)
+            {
+                case CreateScheduleTaskRequest.RepeatTypes.None:
+                    duration = TimeSpan.Zero;
+                    break;
+
+                case CreateScheduleTaskRequest.RepeatTypes.Daily:
+                    duration = TimeSpan.FromDays(1);
+                    break;
+
+                case CreateScheduleTaskRequest.RepeatTypes.Weekly:
+                    duration = TimeSpan.FromDays(7);
+                    break;
+            }
+
+            for (int i = 0; i < request.RepeatCount; ++i)
+            {
+                newTasks.Add(calendar.AddTask(request.StartDate.Add(duration * i), request.EndDate.Add(duration * i)));
+            }
+
+            return Ok(newTasks);
         }
 
         [HttpDelete("task")]
-        public IActionResult DeleteTask([FromQuery] string calendarID, [FromQuery] string taskID)
+        public IActionResult DeleteTask([FromBody] DeleteScheduleTaskRequest request)
         {
-            var calendar = GetScheduleCalendar(calendarID);
+            var calendar = GetScheduleCalendar(request.CalendarID);
             if (calendar == null)
             {
                 return NotFound();
             }
 
-            calendar.RemoveTask(taskID);
+            calendar.RemoveTask(request.TaskID);
             return Ok();
         }
 
-        [HttpPatch("task/name")]
-        public IActionResult ChangeTaskName([FromQuery] string calendarID, [FromQuery] string taskID, [FromBody] string name)
+        [HttpPatch("task")]
+        public IActionResult UpdateTask([FromBody] UpdateScheduleTaskRequest request)
         {
-            var task = GetScheduleTask(calendarID, taskID);
+            var task = GetScheduleTask(request.CalendarID, request.TaskID);
             if (task == null)
             {
                 return NotFound();
             }
-            task.ChangeName(name);
+
+            if (request.Description != task.Description)
+            {
+                task.ChangeDescription(request.Description);
+            }
+
+            if (request.Name != task.Name)
+            {
+                task.ChangeName(request.Name);
+            }
+
             return Ok();
         }
     }
