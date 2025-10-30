@@ -36,14 +36,14 @@
             }
         }
 
-        public IReadOnlyDictionary<uint, uint> Pick(int count)
+        public IReadOnlyList<uint> Pick(int count)
         {
             if (count <= 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(count), "Count must be greater than zero.");
             }
 
-            Dictionary<uint, uint> result = [];
+            List<uint> result = [];
 
             var prefix = Prefix;
             if (prefix.Count == 0)
@@ -76,14 +76,7 @@
                     }
                 }
 
-                uint key = keys[low];
-
-                if (false == result.ContainsKey(key))
-                {
-                    result[key] = 0;
-                }
-
-                ++result[key];
+                result.Add(keys[low]);
             }
 
             return result;
