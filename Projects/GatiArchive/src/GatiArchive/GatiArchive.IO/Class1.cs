@@ -1,4 +1,4 @@
-﻿namespace GatiArchive.Crypto
+﻿namespace GatiArchive.IO
 {
     public class Class1
     {
