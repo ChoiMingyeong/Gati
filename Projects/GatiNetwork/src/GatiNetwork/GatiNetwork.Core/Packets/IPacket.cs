@@ -1,4 +1,6 @@
-﻿using MemoryPack;
+﻿using GatiNetwork.Core.Packets;
+using GatiNetwork.Core.RecordStructs;
+using MemoryPack;
 using System.Collections.Concurrent;
 using System.Reflection;
 
@@ -7,14 +9,14 @@ namespace GatiNetwork.Core
     [MemoryPackable]
     public partial class IPacket
     {
-        private static ConcurrentDictionary<Type, ushort> _cachedProtocolCode = [];
+        private static ConcurrentDictionary<Type, ProtocolCode> _cachedProtocolCode = [];
 
         public byte[] Serialize()
         {
             return MemoryPackSerializer.Serialize(GetType(), this);
         }
 
-        public ushort GetProtocolCode()
+        public ProtocolCode GetProtocolCode()
         {
             _cachedProtocolCode.GetOrAdd(GetType(), type =>
             {

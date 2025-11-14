@@ -1,4 +1,4 @@
-﻿namespace GatiNetwork.Core
+﻿namespace GatiNetwork.Core.PacketHandlers
 {
     public interface IPacketRouter
     {

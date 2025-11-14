@@ -2,14 +2,30 @@
 using System.Reflection;
 using System.Threading.Tasks.Dataflow;
 
-namespace GatiNetwork.Core
+namespace GatiNetwork.Core.Packets
 {
+    public interface IPacketTypeRegistry
+    {
+        void Register(int code, Type packetType);
+    }
+
+    public sealed class PacketTypeRegistry : IPacketTypeRegistry
+    {
+        private readonly Dictionary<int, Type> _codeToType = new();
+
+        public void Register(int code, Type packetType)
+            => _codeToType[code] = packetType;
+
+        public Type? GetPacketType(int code)
+            => _codeToType.TryGetValue(code, out var t) ? t : null;
+    }
+
     public sealed class ProtocolCodeMapper
     {
-        public static async Task<Dictionary<ushort, Type>> LoadPacketMappingsAsync(Assembly assembly)
+        public static async Task<Dictionary<int, Type>> LoadPacketMappingsAsync(Assembly assembly)
         {
             var packetType = typeof(IPacket);
-            var dict = new ConcurrentDictionary<ushort, Type>();
+            var dict = new ConcurrentDictionary<int, Type>();
 
             // 공통 실행 옵션(병렬/백프레셔)
             var exec = new ExecutionDataflowBlockOptions
@@ -22,18 +38,18 @@ namespace GatiNetwork.Core
 
             var source = new BufferBlock<Type>(new DataflowBlockOptions { BoundedCapacity = 1024 });
 
-            var toCode = new TransformBlock<Type, (ushort code, Type type)>(type =>
+            var toCode = new TransformBlock<Type, (int code, Type type)>(type =>
             {
-                if(type.GetCustomAttribute<PacketProtocolAttribute>() is not PacketProtocolAttribute attribute)
+                if (type.GetCustomAttribute<PacketProtocolAttribute>() is not PacketProtocolAttribute attribute)
                 {
                     throw new NotImplementedException(
                         $"{type.FullName}에 PacketProtocolAttribute가 정의되어 있지 않습니다.");
                 }
 
-                return (attribute.ProtocolCode, type);
+                return ((int)attribute.ProtocolCode, type);
             }, exec);
 
-            var register = new ActionBlock<(ushort code, Type type)>(pair =>
+            var register = new ActionBlock<(int code, Type type)>(pair =>
             {
                 if (!dict.TryAdd(pair.code, pair.type))
                 {
@@ -60,7 +76,7 @@ namespace GatiNetwork.Core
             source.Complete();
             await register.Completion;
 
-            return new Dictionary<ushort, Type>(dict);
+            return new Dictionary<int, Type>(dict);
         }
     }
 }

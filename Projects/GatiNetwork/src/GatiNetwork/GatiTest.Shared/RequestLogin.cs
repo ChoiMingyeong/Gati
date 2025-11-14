@@ -1,6 +1,5 @@
 ﻿using GatiNetwork.Core;
 using MemoryPack;
-using System.Reflection;
 
 namespace GatiTest.Shared
 {
@@ -10,8 +9,6 @@ namespace GatiTest.Shared
     {
         public RequestLogin()
         {
-            var map = ProtocolCodeMapper.LoadPacketMappingsAsync(Assembly.GetExecutingAssembly()).GetAwaiter().GetResult();
-            var testCode = GetProtocolCode();
         }
     }
 
