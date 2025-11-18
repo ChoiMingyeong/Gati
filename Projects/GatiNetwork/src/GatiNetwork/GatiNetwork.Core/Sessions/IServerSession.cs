@@ -4,11 +4,11 @@ using System.Net.WebSockets;
 
 namespace GatiNetwork.Core.Sessions
 {
-    public interface IServerSeesion
+    public interface IServerSession
     {
         ConcurrentDictionary<SessionID, IClientSession> Sessions { get; }
 
-        Task StartAsync(string prefix, CancellationToken cancellationToken);
+        Task StartAsync(ushort port, CancellationToken cancellationToken);
 
         Task StopAsync();
 

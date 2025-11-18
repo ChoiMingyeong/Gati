@@ -1,30 +1,11 @@
 ﻿using GatiNetwork.Core.RecordStructs;
 using MemoryPack;
-using Microsoft.Extensions.ObjectPool;
+using System.Buffers;
 using System.Net.WebSockets;
 using TSID.Creator.NET;
 
 namespace GatiNetwork.Core.Sessions
 {
-    public class ClientSessionPolicy : IPooledObjectPolicy<ClientSession>
-    {
-        public ClientSession Create()
-        {
-            return new ClientSession();
-        }
-
-        public bool Return(ClientSession obj)
-        {
-            if (obj.IsConnected is true)
-            {
-                return false;
-            }
-
-            obj.Reset();
-            return true;
-        }
-    }
-
     public sealed class ClientSession : IClientSession
     {
         public SessionID SessionID { get; private set; }
@@ -35,15 +16,102 @@ namespace GatiNetwork.Core.Sessions
 
         public ClientSession()
         {
-            SessionID = TsidCreator.GetTsid();
             _socket = null;
+        }
+
+        public void Attach(WebSocket socket)
+        {
+            SessionID = SessionID.Create();
+            _socket = socket;
         }
 
         public void Reset()
         {
-            SessionID = TsidCreator.GetTsid();
-            _socket?.Dispose();
+            if (IsConnected)
+            {
+                _socket?.CloseAsync(WebSocketCloseStatus.NormalClosure, "Session Reset", CancellationToken.None).Wait();
+                _socket?.Dispose();
+            }
+
+            SessionID = default;
             _socket = null;
+        }
+
+        public async Task StartReceiveLoopAsync(CancellationToken ct = default)
+        {
+            var pool = ArrayPool<byte>.Shared;
+            // 8KB 기본 버퍼 (필요하면 더 크게 조정 가능)
+            byte[] buffer = pool.Rent(8192);
+
+            try
+            {
+                // 메시지가 여러 프래그먼트로 쪼개져서 올 때를 대비한 버퍼
+                using var messageStream = new MemoryStream();
+
+                while (!ct.IsCancellationRequested && IsConnected)
+                {
+                    messageStream.SetLength(0);
+
+                    WebSocketReceiveResult result;
+                    do
+                    {
+                        var segment = new ArraySegment<byte>(buffer);
+                        result = await _socket!.ReceiveAsync(segment, ct).ConfigureAwait(false);
+
+                        if (result.MessageType == WebSocketMessageType.Close)
+                        {
+                            // 클라이언트가 종료를 요청함
+                            await _socket.CloseAsync(WebSocketCloseStatus.NormalClosure,
+                                "Closing", CancellationToken.None).ConfigureAwait(false);
+                            return;
+                        }
+
+                        if (result.MessageType != WebSocketMessageType.Binary)
+                        {
+                            // 텍스트 메시지는 사용하지 않으니 무시하거나 로그만 남김
+                            continue;
+                        }
+
+                        // 프래그먼트 누적
+                        messageStream.Write(buffer, 0, result.Count);
+
+                    } while (!result.EndOfMessage);
+
+                    var raw = messageStream.ToArray();
+                    await OnReceiveAsync(raw).ConfigureAwait(false);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                // cancel 정상 종료
+            }
+            catch (WebSocketException)
+            {
+                // 네트워크 오류 등: 로그 찍고 종료
+            }
+            finally
+            {
+                pool.Return(buffer);
+
+                try
+                {
+                    if (IsConnected)
+                    {
+                        await CloseAsync(WebSocketCloseStatus.NormalClosure, "Server shutting down").ConfigureAwait(false);
+                    }
+                }
+                catch
+                {
+                    // 이미 닫혔으면 무시
+                }
+
+                await OnClosedAsync().ConfigureAwait(false);
+            }
+        }
+
+        private async Task OnReceiveAsync(byte[] rawData)
+        {
+
         }
 
         public async Task SendAsync<TPacket>(TPacket packet) where TPacket : IPacket
@@ -70,7 +138,7 @@ namespace GatiNetwork.Core.Sessions
             _socket = socket;
         }
 
-        public async Task CloseAsync(WebSocketCloseStatus closeStatus, string? statusDescription = null)
+        public async Task CloseAsync(WebSocketCloseStatus closeStatus, string? statusDescription = null, CancellationToken ct = default)
         {
             if(_socket is null)
             {
@@ -80,7 +148,17 @@ namespace GatiNetwork.Core.Sessions
             await _socket.CloseAsync(
                 closeStatus,
                 statusDescription,
-                CancellationToken.None);
+                ct);
+        }
+
+        public void OnConnected()
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task OnClosedAsync()
+        {
+            throw new NotImplementedException();
         }
     }
 }

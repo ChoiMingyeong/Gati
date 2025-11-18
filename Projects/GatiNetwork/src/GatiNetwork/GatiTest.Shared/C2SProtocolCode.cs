@@ -1,6 +1,8 @@
-﻿namespace GatiTest.Shared
+﻿using GatiNetwork.Core;
+
+namespace GatiTest.Shared
 {
-    public static class C2SProtocolCode
+    public class C2SProtocolCode : IProtocolCodeGroup
     {
         public const ushort RequestLogin = 1;
     }

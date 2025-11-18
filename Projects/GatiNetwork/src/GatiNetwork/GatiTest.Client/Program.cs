@@ -1,4 +1,4 @@
-﻿using GatiNetwork.Core;
+﻿using GatiNetwork.Core.Packets;
 using GatiTest.Shared;
 using System.Reflection;
 
@@ -10,7 +10,7 @@ namespace GatiTest.Client
         {
             var map = await ProtocolCodeMapper.LoadPacketMappingsAsync(typeof(C2SProtocolCode).Assembly);
             
-            RequestLogin requestLogin = new();
+
 
         }
     }

@@ -40,10 +40,9 @@ namespace GatiNetwork.Core.Packets
 
             var toCode = new TransformBlock<Type, (int code, Type type)>(type =>
             {
-                if (type.GetCustomAttribute<PacketProtocolAttribute>() is not PacketProtocolAttribute attribute)
+                if (type.GetCustomAttribute<PacketProtocolAttribute<IProtocolCodeGroup>>() is not PacketProtocolAttribute<IProtocolCodeGroup> attribute)
                 {
-                    throw new NotImplementedException(
-                        $"{type.FullName}에 PacketProtocolAttribute가 정의되어 있지 않습니다.");
+                    throw new NotImplementedException($"{type.FullName}에 PacketProtocolAttribute가 정의되어 있지 않습니다.");
                 }
 
                 return ((int)attribute.ProtocolCode, type);

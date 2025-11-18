@@ -9,9 +9,17 @@ namespace GatiNetwork.Core.Sessions
 
         bool IsConnected { get; }
 
-        void Connect(WebSocket socket);
+        void Reset();
+
+        void OnConnected();
+
+        Task OnClosedAsync();
 
         Task CloseAsync(WebSocketCloseStatus closeStatus, string? description = null);
+
+        Task StartReceiveLoopAsync(CancellationToken ct = default);
+
+        Task OnReceiveAsync(byte[] rawData);
 
         Task SendAsync<TPacket>(TPacket packet) where TPacket : IPacket;
     }
