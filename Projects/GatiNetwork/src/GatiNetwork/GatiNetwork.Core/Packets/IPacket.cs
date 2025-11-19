@@ -18,16 +18,14 @@ namespace GatiNetwork.Core
 
         public ProtocolCode GetProtocolCode()
         {
-            _cachedProtocolCode.GetOrAdd(GetType(), type =>
+            var protocolCode = _cachedProtocolCode.GetOrAdd(GetType(), type =>
             {
-                return type.GetCustomAttribute<PacketProtocolAttribute>() is not PacketProtocolAttribute packetAttribute ?
+                return type.GetCustomAttribute<PacketProtocolAttribute<IProtocolCodeGroup>>() is not PacketProtocolAttribute<IProtocolCodeGroup> packetAttribute ?
                     throw new NotImplementedException()
                     : packetAttribute.ProtocolCode;
             });
 
-            return GetType().GetCustomAttribute<PacketProtocolAttribute>() is not PacketProtocolAttribute packetAttribute ?
-                throw new NotImplementedException()
-                : packetAttribute.ProtocolCode;
+            return protocolCode;
         }
     }
 }

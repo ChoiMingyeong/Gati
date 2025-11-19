@@ -47,8 +47,6 @@ public sealed class HttpDataflowServer
 
     public async Task StopAsync()
     {
-        _in.Complete();
-        await _respond.Completion;
         _listener.Stop();
         _listener.Close();
     }

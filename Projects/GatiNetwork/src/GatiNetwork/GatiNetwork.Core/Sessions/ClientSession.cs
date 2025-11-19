@@ -12,6 +12,11 @@ namespace GatiNetwork.Core.Sessions
 
         private WebSocket? _socket;
 
+        public event EventHandler<SessionConnectedEventArgs>? Connected;
+        public event EventHandler<SessionClosedEventArgs>? Closed;
+        public event EventHandler<PacketReceiveEventArgs>? PacketReceive;
+        public event EventHandler<SessionFaultedEventArgs>? Faulted;
+
         public bool IsConnected => _socket is { State: WebSocketState.Open or WebSocketState.CloseSent };
 
         public ClientSession()
@@ -61,8 +66,7 @@ namespace GatiNetwork.Core.Sessions
                         if (result.MessageType == WebSocketMessageType.Close)
                         {
                             // 클라이언트가 종료를 요청함
-                            await _socket.CloseAsync(WebSocketCloseStatus.NormalClosure,
-                                "Closing", CancellationToken.None).ConfigureAwait(false);
+                            await CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", CancellationToken.None).ConfigureAwait(false);
                             return;
                         }
 
@@ -114,9 +118,9 @@ namespace GatiNetwork.Core.Sessions
 
         }
 
-        public async Task SendAsync<TPacket>(TPacket packet) where TPacket : IPacket
+        public async Task SendAsync<TPacket>(TPacket sendPacket) where TPacket : IPacket
         {
-            if(_socket is null)
+            if (_socket is null)
             {
                 return;
             }
@@ -127,36 +131,33 @@ namespace GatiNetwork.Core.Sessions
             }
 
             await _socket.SendAsync(
-                MemoryPackSerializer.Serialize(packet.Serialize()),
+                MemoryPackSerializer.Serialize(sendPacket),
                 WebSocketMessageType.Binary,
                 true,
                 CancellationToken.None);
         }
 
-        public void Connect(WebSocket socket)
-        {
-            _socket = socket;
-        }
-
         public async Task CloseAsync(WebSocketCloseStatus closeStatus, string? statusDescription = null, CancellationToken ct = default)
         {
-            if(_socket is null)
+            if (_socket is null)
             {
                 return;
             }
 
-            await _socket.CloseAsync(
-                closeStatus,
-                statusDescription,
-                ct);
+            await _socket.CloseAsync(closeStatus, statusDescription, ct);
         }
 
         public void OnConnected()
         {
-            throw new NotImplementedException();
+
         }
 
         public async Task OnClosedAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task CloseAsync(SessionCloseReason reason = SessionCloseReason.Normal, string? description = null, Exception? error = null, CancellationToken ct = default)
         {
             throw new NotImplementedException();
         }

@@ -86,5 +86,9 @@ namespace GatiNetwork.Core.Sessions
         {
 
         }
+
+        public async Task StopAsync()
+        {
+        }
     }
 }
