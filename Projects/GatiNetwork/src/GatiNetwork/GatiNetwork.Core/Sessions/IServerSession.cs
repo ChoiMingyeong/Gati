@@ -6,7 +6,7 @@ namespace GatiNetwork.Core.Sessions
 {
     public interface IServerSession
     {
-        ConcurrentDictionary<SessionID, IClientSession> Sessions { get; }
+        ConcurrentDictionary<SessionID, ClientSession> Sessions { get; }
 
         Task StartAsync(ushort port, CancellationToken cancellationToken);
 

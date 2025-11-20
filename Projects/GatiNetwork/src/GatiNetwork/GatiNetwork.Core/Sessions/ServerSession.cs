@@ -1,5 +1,6 @@
 ﻿using GatiNetwork.Core.Packets;
 using GatiNetwork.Core.RecordStructs;
+using GatiNetwork.Core.Transport;
 using MemoryPack;
 using Microsoft.Extensions.ObjectPool;
 using System.Collections.Concurrent;
@@ -11,7 +12,7 @@ namespace GatiNetwork.Core.Sessions
 {
     public sealed class ServerSession : IServerSession
     {
-        public ConcurrentDictionary<SessionID, IClientSession> Sessions { get; } = [];
+        public ConcurrentDictionary<SessionID, ClientSession> Sessions { get; } = [];
 
         private readonly HttpListener _httpListener;
         private readonly ObjectPool<ClientSession> _pool;
@@ -60,9 +61,9 @@ namespace GatiNetwork.Core.Sessions
             var webSocket = wsContext.WebSocket;
 
             var session = _pool.Get();
-            session.Attach(webSocket);
+            session.Attach(SessionID.Create(), new WebSocketTransport(webSocket));
 
-            Sessions[session.SessionID] = session;
+            Sessions[session.ID] = session;
 
             try
             {
@@ -70,7 +71,7 @@ namespace GatiNetwork.Core.Sessions
             }
             finally
             {
-                Sessions.TryRemove(session.SessionID, out _);
+                Sessions.TryRemove(session.ID, out _);
                 session.Reset();
                 _pool.Return(session);
             }

@@ -1,12 +1,13 @@
-﻿using MemoryPack;
+﻿using GatiNetwork.Core.RecordStructs;
+using MemoryPack;
 
 namespace GatiNetwork.Core
 {
     [MemoryPackable]
-    internal sealed partial class NetworkPacket
+    public sealed partial class NetworkPacket
     {
-        public ushort ProtocolCode { get; }
+        public ProtocolCode ProtocolCode { get; init; }
 
-        public byte[] Payload { get; } = [];
+        public byte[] Payload { get; init; } = [];
     }
 }

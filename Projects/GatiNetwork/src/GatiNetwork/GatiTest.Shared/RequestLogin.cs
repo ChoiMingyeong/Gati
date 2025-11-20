@@ -5,12 +5,9 @@ using MemoryPack;
 namespace GatiTest.Shared
 {
     [MemoryPackable]
-    [PacketProtocol<C2SProtocolCode>(C2SProtocolCode.RequestLogin)]
+    [PacketProtocol(C2SProtocolCode.RequestLogin)]
     public partial class RequestLogin : IPacket
     {
-        public RequestLogin()
-        {
-        }
+        public int Test { get; set; }
     }
-
 }
