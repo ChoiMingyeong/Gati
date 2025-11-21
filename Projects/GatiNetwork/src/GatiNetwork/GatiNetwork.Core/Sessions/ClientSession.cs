@@ -161,8 +161,8 @@ namespace GatiNetwork.Core.Sessions
     //        throw new NotImplementedException();
     //    }
     //}
-    
-    public sealed class ClientSession
+
+    public sealed class ClientSession : ISession
     {
         /// <summary>
         /// 세션 고유 ID
@@ -205,26 +205,29 @@ namespace GatiNetwork.Core.Sessions
         /// <returns></returns>
         public async Task StartReceiveLoopAsync(CancellationToken ct = default)
         {
-            if(_transport is null || _channel is null)
+            if (_transport is null || _channel is null)
             {
                 throw new InvalidOperationException("Transport is not attached.");
             }
 
-            try
+            while (!ct.IsCancellationRequested && IsConnected)
             {
-                await foreach(var packet in _channel.ReadPacketsAsync(ct).ConfigureAwait(false))
+                try
                 {
-                    PacketReceive?.Invoke(this, new PacketReceiveEventArgs(ID, packet));
+                    await foreach (var packet in _channel.ReadPacketsAsync(ct).ConfigureAwait(false))
+                    {
+                        RaisePacketReceived(packet);
+                    }
                 }
-            }
-            catch (OperationCanceledException)
-            {
-                Closed?.Invoke(this, new SessionClosedEventArgs(ID, SessionCloseReason.Timeout, "Canceled", null));
-            }
-            catch (Exception ex)
-            {
-                Faulted?.Invoke(this, new SessionFaultedEventArgs(ID, ex));
-                Closed?.Invoke(this, new SessionClosedEventArgs(ID, SessionCloseReason.TransportError, ex.Message, ex));
+                catch (OperationCanceledException)
+                {
+                    RaiseClosed(SessionCloseReason.Timeout, "Canceled", null);
+                }
+                catch (Exception ex)
+                {
+                    RaiseFaulted(ex);
+                    RaiseClosed(SessionCloseReason.TransportError, ex.Message, ex);
+                }
             }
         }
 
@@ -236,7 +239,7 @@ namespace GatiNetwork.Core.Sessions
         /// <returns></returns>
         public async Task SendAsync<TPacket>(TPacket sendPacket, CancellationToken ct = default) where TPacket : IPacket
         {
-            if(_channel is null)
+            if (_channel is null)
             {
                 throw new InvalidOperationException("Transport is not attached.");
             }
@@ -270,21 +273,29 @@ namespace GatiNetwork.Core.Sessions
         /// 세션이 연결되었을 때 발생하는 이벤트
         /// </summary>
         public event EventHandler<SessionConnectedEventArgs>? Connected;
+        private void OnConnected()
+            => Connected?.Invoke(this, new SessionConnectedEventArgs(ID));
 
         /// <summary>
         /// 세션이 정상/비정상적으로 종료되었을 때 발생하는 이벤트
         /// </summary>
         public event EventHandler<SessionClosedEventArgs>? Closed;
+        private void RaiseClosed(SessionCloseReason reason, string? description, Exception? error)
+            => Closed?.Invoke(this, new SessionClosedEventArgs(ID, reason, description, error));
 
         /// <summary>
         /// 패킷이 수신되었을 때 발생하는 이벤트
         /// </summary>
-        public event EventHandler<PacketReceiveEventArgs>? PacketReceive;
+        public event EventHandler<PacketReceiveEventArgs>? PacketReceived;
+        private void RaisePacketReceived(IPacket packet)
+            => PacketReceived?.Invoke(this, new PacketReceiveEventArgs(ID, packet));
 
         /// <summary>
         /// 수신/송신/디코딩 과정에서 예외가 발생했을 때 발생하는 이벤트
         /// </summary>
         public event EventHandler<SessionFaultedEventArgs>? Faulted;
+        private void RaiseFaulted(Exception error)
+            => Faulted?.Invoke(this, new SessionFaultedEventArgs(ID, error));
         #endregion
     }
 }

@@ -1,16 +1,12 @@
-﻿using GatiNetwork.Core.Packets;
-using GatiNetwork.Core.RecordStructs;
+﻿using GatiNetwork.Core.RecordStructs;
 using GatiNetwork.Core.Transport;
-using MemoryPack;
 using Microsoft.Extensions.ObjectPool;
 using System.Collections.Concurrent;
 using System.Net;
-using System.Net.WebSockets;
-using System.Threading.Tasks.Dataflow;
 
 namespace GatiNetwork.Core.Sessions
 {
-    public sealed class ServerSession : IServerSession
+    public sealed class ServerSession : ISession
     {
         public ConcurrentDictionary<SessionID, ClientSession> Sessions { get; } = [];
 
@@ -78,14 +74,20 @@ namespace GatiNetwork.Core.Sessions
 
         }
 
-        public async Task CloseAsync(WebSocketCloseStatus closeStatus, params SessionID[] sessionIDs)
+        public async Task CloseAsync(
+            SessionCloseReason closeReason,
+            string? description = null,
+            Exception? error = null,
+            CancellationToken ct = default,
+            params SessionID[] sessionIDs)
         {
-
-        }
-
-        public async Task BroadcastAsync<TPacket>(TPacket packet, params SessionID[] sessionIDs) where TPacket : IPacket
-        {
-
+            foreach (var sessionID in sessionIDs)
+            {
+                if (Sessions.TryGetValue(sessionID, out var session))
+                {
+                    await session.CloseAsync(closeReason, description, error, ct);
+                }
+            }
         }
 
         public async Task StopAsync()

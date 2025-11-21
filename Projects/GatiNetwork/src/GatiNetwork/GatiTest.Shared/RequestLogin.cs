@@ -8,6 +8,8 @@ namespace GatiTest.Shared
     [PacketProtocol(C2SProtocolCode.RequestLogin)]
     public partial class RequestLogin : IPacket
     {
-        public int Test { get; set; }
+        public string Email { get; set; } = string.Empty;
+
+        public string Password { get; set; } = string.Empty;
     }
 }

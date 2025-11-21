@@ -2,9 +2,10 @@
 
 namespace GatiNetwork.Core.PacketHandlers
 {
-    public interface IPacketHandler<TPacket>
+    public interface IPacketHandler<TSession, TPacket>
+        where TSession : ISession
         where TPacket : IPacket
     {
-        Task ExecuteAsync(ClientSession session, TPacket recPacket);
+        Task ExecuteAsync(TSession session, TPacket recPacket);
     }
 }

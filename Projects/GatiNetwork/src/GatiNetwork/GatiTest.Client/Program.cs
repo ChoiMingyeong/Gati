@@ -1,10 +1,4 @@
-﻿using GatiNetwork.Core;
-using GatiNetwork.Core.PacketHandlers;
-using GatiNetwork.Core.Packets;
-using GatiNetwork.Core.RecordStructs;
-using GatiTest.Client.Handlers;
-using GatiTest.Shared;
-using MemoryPack;
+﻿using GatiNetwork.Core.PacketHandlers;
 
 namespace GatiTest.Client
 {
@@ -13,6 +7,8 @@ namespace GatiTest.Client
         static async Task Main(string[] args)
         {
             PacketHandlerRegistry.Initialize();
+
+
         }
     }
 
