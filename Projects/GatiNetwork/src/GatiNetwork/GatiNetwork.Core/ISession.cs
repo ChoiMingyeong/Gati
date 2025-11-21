@@ -1,4 +1,4 @@
-﻿namespace GatiNetwork.Core.Sessions
+﻿namespace GatiNetwork.Core
 {
     public interface ISession
     {
