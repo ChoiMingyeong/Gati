@@ -1,0 +1,55 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35919.96
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GatiNetwork.Core", "GatiNetwork.Core\GatiNetwork.Core.csproj", "{9B7B73E2-0105-4766-84FF-91782CBB4FDB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GatiTest.Shared", "GatiTest.Shared\GatiTest.Shared.csproj", "{C59DEDD3-1FF5-4D75-97F9-6DBC1371FB4F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GatiTest.Client", "GatiTest.Client\GatiTest.Client.csproj", "{E163CF58-7FD6-49AE-99B4-241E58150EBF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GatiTest.Server", "GatiTest.Server\GatiTest.Server.csproj", "{B3216068-1C58-4211-AAAF-59C73F46F724}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GatiNetwork.Server", "GatiNetwork.Server\GatiNetwork.Server.csproj", "{A4839393-CAD2-4311-9D64-49E2C2359F8D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GatiNetwork.Client", "GatiNetwork.Client\GatiNetwork.Client.csproj", "{44DB6E57-9072-4CA1-AF57-E575D852E67E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9B7B73E2-0105-4766-84FF-91782CBB4FDB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9B7B73E2-0105-4766-84FF-91782CBB4FDB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9B7B73E2-0105-4766-84FF-91782CBB4FDB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9B7B73E2-0105-4766-84FF-91782CBB4FDB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C59DEDD3-1FF5-4D75-97F9-6DBC1371FB4F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C59DEDD3-1FF5-4D75-97F9-6DBC1371FB4F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C59DEDD3-1FF5-4D75-97F9-6DBC1371FB4F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C59DEDD3-1FF5-4D75-97F9-6DBC1371FB4F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E163CF58-7FD6-49AE-99B4-241E58150EBF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E163CF58-7FD6-49AE-99B4-241E58150EBF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E163CF58-7FD6-49AE-99B4-241E58150EBF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E163CF58-7FD6-49AE-99B4-241E58150EBF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B3216068-1C58-4211-AAAF-59C73F46F724}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3216068-1C58-4211-AAAF-59C73F46F724}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3216068-1C58-4211-AAAF-59C73F46F724}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3216068-1C58-4211-AAAF-59C73F46F724}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A4839393-CAD2-4311-9D64-49E2C2359F8D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A4839393-CAD2-4311-9D64-49E2C2359F8D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A4839393-CAD2-4311-9D64-49E2C2359F8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A4839393-CAD2-4311-9D64-49E2C2359F8D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{44DB6E57-9072-4CA1-AF57-E575D852E67E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{44DB6E57-9072-4CA1-AF57-E575D852E67E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{44DB6E57-9072-4CA1-AF57-E575D852E67E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{44DB6E57-9072-4CA1-AF57-E575D852E67E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {EA1865EC-1D4C-42E2-AB1B-93E9E0FE3132}
+	EndGlobalSection
+EndGlobal
