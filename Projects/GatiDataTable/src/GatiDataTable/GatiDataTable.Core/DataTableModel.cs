@@ -7,6 +7,9 @@ namespace GatiDataTable.Core
 
         public List<DataRowModel> Rows { get; } = [];
 
+        private uint _id = 0;
+        public uint Id => Interlocked.Increment(ref _id);
+
         public DataTableModel(DataTableSchema schema)
         {
             Schema = schema;

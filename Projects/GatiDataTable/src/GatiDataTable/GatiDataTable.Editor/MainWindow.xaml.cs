@@ -14,7 +14,32 @@ namespace GatiDataTable.Editor
     /// </summary>
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
-        private readonly DataTableModel _coreTable;
+        private ObservableCollection<DatatTableEntry> _tables;
+        public ObservableCollection<DatatTableEntry> Tables
+        {
+            get => _tables;
+            set
+            {
+                _tables = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private DatatTableEntry? _selectedTable;
+        public DatatTableEntry? SelectedTable
+        {
+            get => _selectedTable;
+            set
+            {
+                if (_selectedTable != value)
+                {
+                    _selectedTable = value;
+                    OnPropertyChanged();
+                    OnSelectedTableChanged();
+                }
+            }
+        }
+
         public ObservableCollection<GenericRowViewModel> Rows
         {
             get => _rows;
@@ -36,32 +61,78 @@ namespace GatiDataTable.Editor
             InitializeComponent();
             DataContext = this;
 
-            var schema = new DataTableSchema("Monster")
+            InitializeTables();
+
+
+            Rows.CollectionChanged += Rows_CollectionChanged;
+        }
+
+        private void InitializeTables()
+        {
+            // Monster 테이블
+            var monsterSchema = new DataTableSchema("Monster")
                 .AddColumn("Id", ColumnKind.Int)
                 .AddColumn("Name", ColumnKind.String)
                 .AddColumn("Hp", ColumnKind.Float)
                 .AddColumn("IsBoss", ColumnKind.Bool);
 
-            _coreTable = new DataTableModel(schema);
+            var monsterTable = new DataTableModel(monsterSchema);
 
-            var r1 = _coreTable.AddRow();
-            r1.Set("Id", 1);
-            r1.Set("Name", "Slime");
-            r1.Set("Hp", 50f);
-            r1.Set("IsBoss", false);
+            var mr1 = monsterTable.AddRow();
+            mr1.Set("Id", 1);
+            mr1.Set("Name", "Slime");
+            mr1.Set("Hp", 50f);
+            mr1.Set("IsBoss", false);
 
-            var r2 = _coreTable.AddRow();
-            r2.Set("Id", 2);
-            r2.Set("Name", "Orc");
-            r2.Set("Hp", 120f);
-            r2.Set("IsBoss", true);
+            var mr2 = monsterTable.AddRow();
+            mr2.Set("Id", 2);
+            mr2.Set("Name", "Orc");
+            mr2.Set("Hp", 120f);
+            mr2.Set("IsBoss", false);
 
-            Rows = [.. _coreTable.Rows.Select(row => new GenericRowViewModel(row))];
+            // Skill 테이블 (예시)
+            var skillSchema = new DataTableSchema("Skill")
+                .AddColumn("Id", ColumnKind.Int)
+                .AddColumn("Name", ColumnKind.String)
+                .AddColumn("MpCost", ColumnKind.Int);
 
+            var skillTable = new DataTableModel(skillSchema);
+
+            var sr1 = skillTable.AddRow();
+            sr1.Set("Id", 100);
+            sr1.Set("Name", "Fire Ball");
+            sr1.Set("MpCost", 10);
+
+            var sr2 = skillTable.AddRow();
+            sr2.Set("Id", 101);
+            sr2.Set("Name", "Ice Spear");
+            sr2.Set("MpCost", 15);
+
+            Tables =
+            [
+                new DatatTableEntry(monsterTable),
+                new DatatTableEntry(skillTable),
+            ];
+
+            SelectedTable = Tables.FirstOrDefault();
+        }
+
+        private void OnSelectedTableChanged()
+        {
+            Rows.CollectionChanged -= Rows_CollectionChanged;
+
+            if (SelectedTable is null)
+            {
+                Rows = [];
+                DataGrid.Columns.Clear();
+                return;
+            }
+
+            var table = SelectedTable.Table;
+            Rows = [.. table.Rows.Select(r => new GenericRowViewModel(r))];
             Rows.CollectionChanged += Rows_CollectionChanged;
 
-            // 스키마를 보고 DataGrid 컬럼을 동적으로 생성
-            BuildColumns(schema);
+            BuildColumns(table.Schema);
         }
 
         private void BuildColumns(DataTableSchema schema)
@@ -105,27 +176,36 @@ namespace GatiDataTable.Editor
 
         private void Rows_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
+            if(SelectedTable is null)
+            {
+                return;
+            }
+
+            var table = SelectedTable.Table;
 
             if (e.Action == NotifyCollectionChangedAction.Remove && e.OldItems != null)
             {
-                foreach (MonsterRowViewModel vm in e.OldItems)
+                foreach (GenericRowViewModel vm in e.OldItems)
                 {
-                    _coreTable.Rows.Remove(GetInnerRow(vm));
+                    table.Rows.Remove(GetInnerRow(vm));
                 }
             }
         }
 
-        private static DataRowModel GetInnerRow(MonsterRowViewModel vm)
+        private static DataRowModel GetInnerRow(GenericRowViewModel vm)
         {
-            return vm.GetRow();
+            return vm.Row;
         }
 
         private void OnAddRowClick(object sender, RoutedEventArgs e)
         {
-            // 1) Core에 새 Row 생성
-            var newRow = _coreTable.AddRow();
+            if (SelectedTable is null)
+                return;
 
-            foreach (var col in _coreTable.Schema.Columns)
+            var table = SelectedTable.Table;
+            var newRow = table.AddRow();
+
+            foreach (var col in table.Schema.Columns)
             {
                 switch (col.Kind)
                 {
@@ -247,14 +327,16 @@ namespace GatiDataTable.Editor
                 }
             }
 
-            // 2) ViewModel로 감싸서 DataGrid에 추가
-            var vm = new GenericRowViewModel(newRow);
-            Rows.Add(vm);
+            Rows.Add(new GenericRowViewModel(newRow));
         }
 
         private void OnAddColumnClick(object sender, RoutedEventArgs e)
         {
-            var dlg = new AddColumnDialog
+            if (SelectedTable is null)
+                return;
+
+            var table = SelectedTable.Table;
+            var dlg = new AddColumnDialog(table.Schema)
             {
                 Owner = this
             };
@@ -263,13 +345,12 @@ namespace GatiDataTable.Editor
             {
                 var name = dlg.ColumnName;
                 var kind = dlg.SelectedKind;
+                var enumTypeName = dlg.EnumTypeName;
                 var defaultObj = ParseDefaultValue(kind, dlg.DefaultValueText);
 
-                // Core 모델에 컬럼 추가 (스키마 + 모든 Row에 기본값 적용)
-                _coreTable.AddColumn(name, kind, defaultValue: defaultObj);
+                table.AddColumn(name, kind, enumTypeName, defaultValue: defaultObj);
 
-                // DataGrid 컬럼 재구성
-                BuildColumns(_coreTable.Schema);
+                BuildColumns(table.Schema);
             }
         }
 
@@ -312,6 +393,23 @@ namespace GatiDataTable.Editor
                 default:
                     return text;
             }
+        }
+
+        private void OnManageColumnsClick(object sender, RoutedEventArgs e)
+        {
+            if (SelectedTable is null)
+                return;
+
+            var table = SelectedTable.Table;
+
+            //var dlg = new ManageColumnsDialog(table)
+            //{
+            //    Owner = this
+            //};
+
+            //dlg.ShowDialog();
+
+            BuildColumns(table.Schema);
         }
     }
 }

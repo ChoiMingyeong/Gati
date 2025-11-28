@@ -26,14 +26,20 @@ namespace GatiDataTable.Editor
         public ColumnKind SelectedKind =>
             CmbType.SelectedItem is ColumnKind kind ? kind : ColumnKind.String;
 
+        private readonly DataTableSchema _schema;
+
         public string DefaultValueText => TxtDefault.Text.Trim();
 
-        public AddColumnDialog()
+        public string EnumTypeName => TxtEnumType.Text.Trim();
+
+        public AddColumnDialog(DataTableSchema schema)
         {
+            _schema = schema;
+
             InitializeComponent();
-            // ColumnKind enum 값을 콤보박스에 채우기
-            CmbType.ItemsSource = Enum.GetValues(typeof(ColumnKind));
-            CmbType.SelectedItem = ColumnKind.String; // 기본값
+
+            CmbType.ItemsSource = Enum.GetValues<ColumnKind>();
+            CmbType.SelectedItem = ColumnKind.Int;
         }
 
         private void OnOkClick(object sender, RoutedEventArgs e)

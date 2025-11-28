@@ -5,29 +5,70 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GatiDataTable.Editor"
         mc:Ignorable="d"
-        Title="GatiDataTableEditor" Height="450" Width="800">
+        Title="Gati DataTable Editor" 
+        Height="600" 
+        Width="1000">
     <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="220" />
+            <!-- 좌측 테이블 리스트 -->
+            <ColumnDefinition Width="*" />
+            <!-- 우측 편집 영역 -->
+        </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <StackPanel Orientation="Horizontal" Margin="10">
-            <Button Content="+Row"
-                    Padding="5"
-                    Margin="0,0,10,0"
-                    Click="OnAddRowClick" />
-            <Button Content="+Column"
-                    Padding="5"
-                    Click="OnAddColumnClick" />
-        </StackPanel>
+        <!-- 좌측: 테이블 리스트 -->
+        <Border Grid.Column="0"
+                Margin="8"
+                BorderBrush="LightGray"
+                BorderThickness="1">
+            <DockPanel>
+                <TextBlock Text="테이블 목록"
+                           FontWeight="Bold"
+                           Margin="6"
+                           DockPanel.Dock="Top" />
 
-        <DataGrid x:Name="DataGrid"
-                  Grid.Row="1"
-                  ItemsSource="{Binding Rows}"
-                  AutoGenerateColumns="False"
-                  CanUserAddRows="False"
-                  CanUserDeleteRows="True"
-                  Margin="10" />
+                <ListBox ItemsSource="{Binding Tables}"
+                         SelectedItem="{Binding SelectedTable, Mode=TwoWay}"
+                         DisplayMemberPath="Name"
+                         Margin="4" />
+            </DockPanel>
+        </Border>
+        <!-- 우측: 버튼 + DataGrid -->
+        <Grid Grid.Column="1" Margin="8">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <!-- 버튼 영역 -->
+            <StackPanel Orientation="Horizontal"
+                        Grid.Row="0"
+                        Margin="0,0,0,8">
+                <Button Content="+Row"
+                        Padding="5"
+                        Margin="0,0,8,0"
+                        Click="OnAddRowClick" />
+
+                <Button Content="+Column"
+                        Padding="5"
+                        Margin="0,0,8,0"
+                        Click="OnAddColumnClick" />
+
+                <Button Content="Manage"
+                        Padding="5"
+                        Click="OnManageColumnsClick" />
+            </StackPanel>
+
+            <!-- DataGrid -->
+            <DataGrid x:Name="DataGrid"
+                      Grid.Row="1"
+                      ItemsSource="{Binding Rows}"
+                      AutoGenerateColumns="False"
+                      CanUserAddRows="False"
+                      CanUserDeleteRows="True" />
+        </Grid>
     </Grid>
 </Window>

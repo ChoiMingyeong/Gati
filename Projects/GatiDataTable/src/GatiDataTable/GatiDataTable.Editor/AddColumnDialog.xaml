@@ -15,10 +15,17 @@
     <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <!-- 이름 -->
             <RowDefinition Height="Auto" />
+            <!-- 타입 -->
             <RowDefinition Height="Auto" />
+            <!-- Enum 타입명 -->
+            <RowDefinition Height="Auto" />
+            <!-- 기본값 -->
             <RowDefinition Height="*" />
+            <!-- 안내 -->
             <RowDefinition Height="Auto" />
+            <!-- 버튼 -->
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
@@ -43,18 +50,30 @@
                   Grid.Row="1" Grid.Column="1"
                   Margin="0,0,0,8"
                   SelectedIndex="0" />
-
-        <!-- 기본값 -->
-        <TextBlock Grid.Row="2" Grid.Column="0"
-                   VerticalAlignment="Center"
+        
+        <!-- Enum 타입명 -->
+        <TextBlock x:Name="LblEnumType"
+                   Grid.Row="2" Grid.Column="0"
                    Margin="0,0,8,8"
+                   VerticalAlignment="Center"
+                   Text="Enum 타입명:"
+                   Visibility="Collapsed" />
+        <TextBox x:Name="TxtEnumType"
+                 Grid.Row="2" Grid.Column="1"
+                 Margin="0,0,0,8"
+                 Visibility="Collapsed" />
+        
+        <!-- 기본값 -->
+        <TextBlock Grid.Row="3" Grid.Column="0"
+                   Margin="0,0,8,8"
+                   VerticalAlignment="Center"
                    Text="기본값:" />
         <TextBox x:Name="TxtDefault"
-                 Grid.Row="2" Grid.Column="1"
+                 Grid.Row="3" Grid.Column="1"
                  Margin="0,0,0,8" />
 
         <!-- 안내 -->
-        <TextBlock Grid.Row="3"
+        <TextBlock Grid.Row="4"
                    Grid.ColumnSpan="2"
                    Margin="0,4,0,8"
                    Foreground="Gray"
@@ -64,7 +83,7 @@
         </TextBlock>
         
         <!-- 버튼 영역 -->
-        <StackPanel Grid.Row="4"
+        <StackPanel Grid.Row="5"
                     Grid.ColumnSpan="2"
                     Orientation="Horizontal"
                     HorizontalAlignment="Right">
