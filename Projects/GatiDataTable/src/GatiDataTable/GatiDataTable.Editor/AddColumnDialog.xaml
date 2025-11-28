@@ -1,0 +1,81 @@
+﻿<Window x:Class="GatiDataTable.Editor.AddColumnDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:GatiDataTable.Editor"
+        mc:Ignorable="d"
+        Title="AddColumn" 
+        Height="220" 
+        Width="360"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        WindowStyle="SingleBorderWindow"
+        ShowInTaskbar="False">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        
+        <!-- 컬럼명 -->
+        <TextBlock Grid.Row="0" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   Margin="0,0,8,8"
+                   Text="컬럼명:" />
+        <TextBox x:Name="TxtName"
+                 Grid.Row="0" Grid.Column="1"
+                 Margin="0,0,0,8" />
+
+        <!-- 타입 -->
+        <TextBlock Grid.Row="1" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   Margin="0,0,8,8"
+                   Text="타입:" />
+        <ComboBox x:Name="CmbType"
+                  Grid.Row="1" Grid.Column="1"
+                  Margin="0,0,0,8"
+                  SelectedIndex="0" />
+
+        <!-- 기본값 -->
+        <TextBlock Grid.Row="2" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   Margin="0,0,8,8"
+                   Text="기본값:" />
+        <TextBox x:Name="TxtDefault"
+                 Grid.Row="2" Grid.Column="1"
+                 Margin="0,0,0,8" />
+
+        <!-- 안내 -->
+        <TextBlock Grid.Row="3"
+                   Grid.ColumnSpan="2"
+                   Margin="0,4,0,8"
+                   Foreground="Gray"
+                   TextWrapping="Wrap">
+            * 기본값은 선택한 타입으로 파싱을 시도합니다.
+            (파싱 실패 시 타입에 맞는 기본값이 사용됩니다.)
+        </TextBlock>
+        
+        <!-- 버튼 영역 -->
+        <StackPanel Grid.Row="4"
+                    Grid.ColumnSpan="2"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right">
+            <Button Content="확인"
+                    Width="80"
+                    Margin="0,0,8,0"
+                    IsDefault="True"
+                    Click="OnOkClick" />
+            <Button Content="취소"
+                    Width="80"
+                    IsCancel="True" />
+        </StackPanel>
+    </Grid>
+</Window>

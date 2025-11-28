@@ -13,10 +13,13 @@
         </Grid.RowDefinitions>
 
         <StackPanel Orientation="Horizontal" Margin="10">
-            <Button Content="Row 추가"
+            <Button Content="+Row"
                     Padding="5"
                     Margin="0,0,10,0"
                     Click="OnAddRowClick" />
+            <Button Content="+Column"
+                    Padding="5"
+                    Click="OnAddColumnClick" />
         </StackPanel>
 
         <DataGrid x:Name="DataGrid"

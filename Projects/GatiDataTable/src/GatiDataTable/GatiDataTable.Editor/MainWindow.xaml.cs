@@ -75,7 +75,7 @@ namespace GatiDataTable.Editor
                     case ColumnKind.Bool:
                         {
                             // 체크박스 컬럼
-                            var boolColumn = new DataGridCheckBoxColumn
+                            DataGrid.Columns.Add(new DataGridCheckBoxColumn
                             {
                                 Header = col.Name,
                                 Binding = new Binding($"[{col.Name}]")
@@ -83,15 +83,7 @@ namespace GatiDataTable.Editor
                                     Mode = BindingMode.TwoWay,
                                     UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
                                 }
-                            };
-
-                            // 2-state 체크박스
-                            var elementStyle = new Style(typeof(CheckBox));
-                            elementStyle.Setters.Add(new Setter(CheckBox.IsThreeStateProperty, false));
-                            boolColumn.ElementStyle = elementStyle;
-                            boolColumn.EditingElementStyle = elementStyle;
-
-                            DataGrid.Columns.Add(boolColumn);
+                            });
                         }
                         break;
 
@@ -258,6 +250,68 @@ namespace GatiDataTable.Editor
             // 2) ViewModel로 감싸서 DataGrid에 추가
             var vm = new GenericRowViewModel(newRow);
             Rows.Add(vm);
+        }
+
+        private void OnAddColumnClick(object sender, RoutedEventArgs e)
+        {
+            var dlg = new AddColumnDialog
+            {
+                Owner = this
+            };
+
+            if (dlg.ShowDialog() == true)
+            {
+                var name = dlg.ColumnName;
+                var kind = dlg.SelectedKind;
+                var defaultObj = ParseDefaultValue(kind, dlg.DefaultValueText);
+
+                // Core 모델에 컬럼 추가 (스키마 + 모든 Row에 기본값 적용)
+                _coreTable.AddColumn(name, kind, defaultValue: defaultObj);
+
+                // DataGrid 컬럼 재구성
+                BuildColumns(_coreTable.Schema);
+            }
+        }
+
+        private static object? ParseDefaultValue(ColumnKind kind, string text)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                // 비어 있을 때 타입별 기본값
+                return kind switch
+                {
+                    ColumnKind.Int => 0,
+                    ColumnKind.Float => 0f,
+                    ColumnKind.Bool => false,
+                    ColumnKind.String => string.Empty,
+                    _ => null
+                };
+            }
+
+            switch (kind)
+            {
+                case ColumnKind.Int:
+                    if (int.TryParse(text, out var i))
+                        return i;
+                    return 0;
+
+                case ColumnKind.Float:
+                    if (float.TryParse(text, out var f))
+                        return f;
+                    return 0f;
+
+                case ColumnKind.Bool:
+                    if (bool.TryParse(text, out var b))
+                        return b;
+                    // "0", "1" 같은 케이스를 처리하고 싶다면:
+                    if (text == "0") return false;
+                    if (text == "1") return true;
+                    return false;
+
+                case ColumnKind.String:
+                default:
+                    return text;
+            }
         }
     }
 }

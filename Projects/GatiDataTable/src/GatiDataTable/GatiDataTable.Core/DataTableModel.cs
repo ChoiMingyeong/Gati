@@ -18,5 +18,20 @@ namespace GatiDataTable.Core
             Rows.Add(row);
             return row;
         }
+
+        public void AddColumn(
+            string name, 
+            ColumnKind kind, 
+            string? enumTypeName = null,
+            bool isNullable = false, 
+            bool isUnsigned = false, 
+            object? defaultValue = null)
+        {
+            Schema.AddColumn(name, kind, enumTypeName, isNullable, isUnsigned);
+            foreach (var row in Rows)
+            {
+                row.AddColumnDefault(defaultValue);
+            }
+        }
     }
 }
