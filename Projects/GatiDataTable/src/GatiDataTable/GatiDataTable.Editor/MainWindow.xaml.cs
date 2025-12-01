@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Data.Common;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
@@ -14,7 +15,7 @@ namespace GatiDataTable.Editor
     /// </summary>
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
-        private ObservableCollection<DatatTableEntry> _tables;
+        private ObservableCollection<DatatTableEntry> _tables = [];
         public ObservableCollection<DatatTableEntry> Tables
         {
             get => _tables;
@@ -63,7 +64,6 @@ namespace GatiDataTable.Editor
 
             InitializeTables();
 
-
             Rows.CollectionChanged += Rows_CollectionChanged;
         }
 
@@ -71,7 +71,6 @@ namespace GatiDataTable.Editor
         {
             // Monster 테이블
             var monsterSchema = new DataTableSchema("Monster")
-                .AddColumn("Id", ColumnKind.Int)
                 .AddColumn("Name", ColumnKind.String)
                 .AddColumn("Hp", ColumnKind.Float)
                 .AddColumn("IsBoss", ColumnKind.Bool);
@@ -79,32 +78,27 @@ namespace GatiDataTable.Editor
             var monsterTable = new DataTableModel(monsterSchema);
 
             var mr1 = monsterTable.AddRow();
-            mr1.Set("Id", 1);
             mr1.Set("Name", "Slime");
             mr1.Set("Hp", 50f);
             mr1.Set("IsBoss", false);
 
             var mr2 = monsterTable.AddRow();
-            mr2.Set("Id", 2);
             mr2.Set("Name", "Orc");
             mr2.Set("Hp", 120f);
             mr2.Set("IsBoss", false);
 
             // Skill 테이블 (예시)
             var skillSchema = new DataTableSchema("Skill")
-                .AddColumn("Id", ColumnKind.Int)
                 .AddColumn("Name", ColumnKind.String)
                 .AddColumn("MpCost", ColumnKind.Int);
 
             var skillTable = new DataTableModel(skillSchema);
 
             var sr1 = skillTable.AddRow();
-            sr1.Set("Id", 100);
             sr1.Set("Name", "Fire Ball");
             sr1.Set("MpCost", 10);
 
             var sr2 = skillTable.AddRow();
-            sr2.Set("Id", 101);
             sr2.Set("Name", "Ice Spear");
             sr2.Set("MpCost", 15);
 
@@ -141,12 +135,14 @@ namespace GatiDataTable.Editor
 
             foreach (var col in schema.Columns)
             {
+                DataGridColumn column;
+
                 switch (col.Kind)
                 {
                     case ColumnKind.Bool:
                         {
                             // 체크박스 컬럼
-                            DataGrid.Columns.Add(new DataGridCheckBoxColumn
+                            column = new DataGridCheckBoxColumn
                             {
                                 Header = col.Name,
                                 Binding = new Binding($"[{col.Name}]")
@@ -154,13 +150,13 @@ namespace GatiDataTable.Editor
                                     Mode = BindingMode.TwoWay,
                                     UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
                                 }
-                            });
+                            };
                         }
                         break;
 
                     default:
                         // 텍스트 컬럼 (int, float, string, enum도 일단 텍스트)
-                        DataGrid.Columns.Add(new DataGridTextColumn
+                        column = new DataGridTextColumn
                         {
                             Header = col.Name,
                             Binding = new Binding($"[{col.Name}]")
@@ -168,10 +164,19 @@ namespace GatiDataTable.Editor
                                 Mode = BindingMode.TwoWay,
                                 UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
                             }
-                        });
+                        };
                         break;
                 }
+
+                // 시스템/읽기전용 컬럼은 수정 불가
+                if (col.IsReadOnly || col.IsSystem)
+                {
+                    column.IsReadOnly = true;
+                }
+
+                DataGrid.Columns.Add(column);
             }
+
         }
 
         private void Rows_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -207,6 +212,11 @@ namespace GatiDataTable.Editor
 
             foreach (var col in table.Schema.Columns)
             {
+                if(col.IsSystem)
+                {
+                    continue;
+                }
+
                 switch (col.Kind)
                 {
                     case ColumnKind.Byte:

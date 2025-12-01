@@ -7,8 +7,7 @@ namespace GatiDataTable.Core
 
         public List<DataRowModel> Rows { get; } = [];
 
-        private uint _id = 0;
-        public uint Id => Interlocked.Increment(ref _id);
+        private long _idSeed = 0;
 
         public DataTableModel(DataTableSchema schema)
         {
@@ -18,8 +17,14 @@ namespace GatiDataTable.Core
         public DataRowModel AddRow()
         {
             var row = new DataRowModel(Schema);
+            row.Set("Id", NextId());
             Rows.Add(row);
             return row;
+        }
+
+        private uint NextId()
+        {
+            return unchecked((uint)Interlocked.Increment(ref _idSeed));
         }
 
         public void AddColumn(

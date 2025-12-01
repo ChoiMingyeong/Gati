@@ -16,10 +16,24 @@ namespace GatiDataTable.Core
             }
 
             Name = name;
+
+            _columns.Add(new ColumnDefinition(
+                "Id",
+                ColumnKind.Int, 
+                isNullable: false, 
+                isUnsigned: true, 
+                isSystem: true, 
+                isReadOnly: true
+                ));
         }
 
         public DataTableSchema AddColumn(string name, ColumnKind kind, string? enumTypeName = null, bool isNullable = false, bool isUnsigned = false)
         {
+            if(_columns.Exists(c => string.Equals(c.Name, name, StringComparison.Ordinal)))
+            {
+                throw new ArgumentException($"Column '{name}' already exists.");
+            }
+
             _columns.Add(new ColumnDefinition(name, kind, enumTypeName, isNullable, isUnsigned));
             return this;
         }
@@ -35,6 +49,25 @@ namespace GatiDataTable.Core
             }
 
             throw new KeyNotFoundException($"Column '{name}' not found.");
+        }
+
+        public void RemoveAt(int index)
+        {
+            if (_columns[index].IsSystem)
+            {
+                throw new InvalidOperationException($"Cannot remove system column '{_columns[index].Name}'.");
+            }
+            _columns.RemoveAt(index);
+        }
+
+        public void Move(int fromIndex, int toIndex)
+        {
+            if (_columns[fromIndex].IsSystem || _columns[toIndex].IsSystem)
+            {
+                throw new InvalidOperationException($"Cannot move system column.");
+            }
+
+            (_columns[fromIndex], _columns[toIndex]) = (_columns[toIndex], _columns[fromIndex]);
         }
 
         public void SetName(string name)
