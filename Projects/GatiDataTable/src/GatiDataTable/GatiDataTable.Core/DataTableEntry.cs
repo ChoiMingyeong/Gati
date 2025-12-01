@@ -1,14 +1,12 @@
-﻿using GatiDataTable.Core;
-
-namespace GatiDataTable.Editor
+﻿namespace GatiDataTable.Core
 {
-    public sealed class DatatTableEntry
+    public sealed class DataTableEntry
     {
         public string Name => Table.Schema.Name;
 
         public DataTableModel Table { get; }
 
-        public DatatTableEntry(DataTableModel table)
+        public DataTableEntry(DataTableModel table)
         {
             Table = table;
         }

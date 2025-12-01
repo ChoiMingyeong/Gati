@@ -17,6 +17,8 @@ namespace GatiDataTable.Core
 
         public bool IsReadOnly { get; }
 
+        public object? DefaultValue { get; private set; }
+
         public ColumnDefinition(
             string name, 
             ColumnKind columnKind = ColumnKind.Int, 
@@ -24,7 +26,8 @@ namespace GatiDataTable.Core
             bool isNullable = false, 
             bool isUnsigned = false,
             bool isSystem = false,
-            bool isReadOnly = false)
+            bool isReadOnly = false,
+            object? defaultValue = null)
         {
             Name = name;
             Kind = columnKind;
@@ -33,6 +36,7 @@ namespace GatiDataTable.Core
             IsUnsigned = isUnsigned;
             IsSystem = isSystem;
             IsReadOnly = isReadOnly;
+            DefaultValue = defaultValue;
         }
 
         public bool TryChangeType(
@@ -50,6 +54,11 @@ namespace GatiDataTable.Core
             EnumTypeName = enumTypeName;
 
             return true;
+        }
+
+        public void SetDefaultValue(object? value)
+        {
+            DefaultValue = value;
         }
     }
 }

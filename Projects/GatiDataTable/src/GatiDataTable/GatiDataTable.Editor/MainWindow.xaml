@@ -8,67 +8,114 @@
         Title="Gati DataTable Editor" 
         Height="600" 
         Width="1000">
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="220" />
-            <!-- 좌측 테이블 리스트 -->
-            <ColumnDefinition Width="*" />
-            <!-- 우측 편집 영역 -->
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
+    <DockPanel>
+        <!-- 🔹 상단 메뉴바 -->
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="_파일">
+                <MenuItem Header="새 프로젝트(_N)"
+                          Click="OnNewProjectClick" />
+                <Separator />
+                <MenuItem Header="프로젝트 열기(_O)..."
+                          Click="OnOpenProjectClick" />
+                <MenuItem Header="프로젝트 저장(_S)"
+                          Click="OnSaveProjectClick" />
+                <MenuItem Header="다른 이름으로 저장(_A)..."
+                          Click="OnSaveProjectAsClick" />
+                <Separator />
+                <MenuItem Header="종료(_X)"
+                          Click="OnExitClick" />
+            </MenuItem>
 
-        <!-- 좌측: 테이블 리스트 -->
-        <Border Grid.Column="0"
-                Margin="8"
-                BorderBrush="LightGray"
-                BorderThickness="1">
-            <DockPanel>
-                <TextBlock Text="테이블 목록"
-                           FontWeight="Bold"
-                           Margin="6"
-                           DockPanel.Dock="Top" />
+            <MenuItem Header="_테이블">
+                <MenuItem Header="테이블 추가(_T)"
+                          Click="OnAddTableClick" />
+                <MenuItem Header="테이블 삭제(_D)"
+                          Click="OnDeleteTableClick" />
+            </MenuItem>
 
-                <ListBox ItemsSource="{Binding Tables}"
-                         SelectedItem="{Binding SelectedTable, Mode=TwoWay}"
-                         DisplayMemberPath="Name"
-                         Margin="4" />
-            </DockPanel>
-        </Border>
-        <!-- 우측: 버튼 + DataGrid -->
-        <Grid Grid.Column="1" Margin="8">
+            <MenuItem Header="_도움말">
+                <MenuItem Header="정보(_I)"
+                          Click="OnAboutClick" />
+            </MenuItem>
+        </Menu>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="220" />
+                <!-- 좌측 테이블 리스트 -->
+                <ColumnDefinition Width="*" />
+                <!-- 우측 편집 영역 -->
+            </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <!-- 버튼 영역 -->
-            <StackPanel Orientation="Horizontal"
+            <!-- 좌측: 테이블 리스트 -->
+            <Border Grid.Column="0"
+                Margin="8"
+                BorderBrush="LightGray"
+                BorderThickness="1">
+                <DockPanel>
+                    <!-- 상단 제목 + 버튼 -->
+                    <StackPanel DockPanel.Dock="Top"
+                    Orientation="Horizontal"
+                    Margin="6">
+                        <TextBlock Text="테이블 목록"
+                       FontWeight="Bold"
+                       VerticalAlignment="Center" />
+                        <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        Margin="8,0,0,0">
+                            <Button Content="+"
+                        Width="25"
+                        Margin="0,0,4,0"
+                        Click="OnAddTableClick" />
+                            <Button Content="-"
+                        Width="25"
+                        Click="OnDeleteTableClick" />
+                        </StackPanel>
+                    </StackPanel>
+
+
+                    <ListBox ItemsSource="{Binding Tables}"
+                         SelectedItem="{Binding SelectedTable, Mode=TwoWay}"
+                         DisplayMemberPath="Name"
+                         Margin="4" />
+                </DockPanel>
+            </Border>
+            <!-- 우측: 버튼 + DataGrid -->
+            <Grid Grid.Column="1" Margin="8">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <!-- 버튼 영역 -->
+                <StackPanel Orientation="Horizontal"
                         Grid.Row="0"
                         Margin="0,0,0,8">
-                <Button Content="+Row"
+                    <Button Content="+Row"
                         Padding="5"
                         Margin="0,0,8,0"
                         Click="OnAddRowClick" />
 
-                <Button Content="+Column"
+                    <Button Content="+Column"
                         Padding="5"
                         Margin="0,0,8,0"
                         Click="OnAddColumnClick" />
 
-                <Button Content="Manage"
+                    <Button Content="Manage"
                         Padding="5"
                         Click="OnManageColumnsClick" />
-            </StackPanel>
+                </StackPanel>
 
-            <!-- DataGrid -->
-            <DataGrid x:Name="DataGrid"
+                <!-- DataGrid -->
+                <DataGrid x:Name="DataGrid"
                       Grid.Row="1"
                       ItemsSource="{Binding Rows}"
                       AutoGenerateColumns="False"
                       CanUserAddRows="False"
                       CanUserDeleteRows="True" />
+            </Grid>
         </Grid>
-    </Grid>
+    </DockPanel>
 </Window>

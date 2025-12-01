@@ -27,14 +27,24 @@ namespace GatiDataTable.Core
                 ));
         }
 
-        public DataTableSchema AddColumn(string name, ColumnKind kind, string? enumTypeName = null, bool isNullable = false, bool isUnsigned = false)
+        public DataTableSchema AddColumn(
+            string name, 
+            ColumnKind kind, 
+            string? enumTypeName = null, 
+            bool isNullable = false, 
+            bool isUnsigned = false,
+            object? defaultValue = null)
         {
             if(_columns.Exists(c => string.Equals(c.Name, name, StringComparison.Ordinal)))
             {
                 throw new ArgumentException($"Column '{name}' already exists.");
             }
 
-            _columns.Add(new ColumnDefinition(name, kind, enumTypeName, isNullable, isUnsigned));
+            _columns.Add(new ColumnDefinition(name, kind, 
+                enumTypeName: enumTypeName, 
+                isNullable: isNullable, 
+                isUnsigned: isUnsigned, 
+                defaultValue: defaultValue));
             return this;
         }
 

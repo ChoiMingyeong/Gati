@@ -35,7 +35,7 @@ namespace GatiDataTable.Core
             bool isUnsigned = false, 
             object? defaultValue = null)
         {
-            Schema.AddColumn(name, kind, enumTypeName, isNullable, isUnsigned);
+            Schema.AddColumn(name, kind, enumTypeName, isNullable, isUnsigned, defaultValue);
             foreach (var row in Rows)
             {
                 row.AddColumnDefault(defaultValue);

@@ -15,8 +15,8 @@ namespace GatiDataTable.Editor
     /// </summary>
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
-        private ObservableCollection<DatatTableEntry> _tables = [];
-        public ObservableCollection<DatatTableEntry> Tables
+        private ObservableCollection<DataTableEntry> _tables = [];
+        public ObservableCollection<DataTableEntry> Tables
         {
             get => _tables;
             set
@@ -26,8 +26,8 @@ namespace GatiDataTable.Editor
             }
         }
 
-        private DatatTableEntry? _selectedTable;
-        public DatatTableEntry? SelectedTable
+        private DataTableEntry? _selectedTable;
+        public DataTableEntry? SelectedTable
         {
             get => _selectedTable;
             set
@@ -104,8 +104,8 @@ namespace GatiDataTable.Editor
 
             Tables =
             [
-                new DatatTableEntry(monsterTable),
-                new DatatTableEntry(skillTable),
+                new DataTableEntry(monsterTable),
+                new DataTableEntry(skillTable),
             ];
 
             SelectedTable = Tables.FirstOrDefault();
@@ -209,134 +209,6 @@ namespace GatiDataTable.Editor
 
             var table = SelectedTable.Table;
             var newRow = table.AddRow();
-
-            foreach (var col in table.Schema.Columns)
-            {
-                if(col.IsSystem)
-                {
-                    continue;
-                }
-
-                switch (col.Kind)
-                {
-                    case ColumnKind.Byte:
-                        {
-                            if (col.IsNullable)
-                            {
-                                newRow.Set<byte?>(col.Name, null);
-                            }
-                            else
-                            {
-                                newRow.Set<byte>(col.Name, 0);
-                            }
-                        }
-                        break;
-                    case ColumnKind.Short:
-                        {
-                            if (col.IsUnsigned)
-                            {
-                                if (col.IsNullable)
-                                {
-                                    newRow.Set<ushort?>(col.Name, null);
-                                }
-                                else
-                                {
-                                    newRow.Set<ushort>(col.Name, 0);
-                                }
-                            }
-                            else
-                            {
-                                if (col.IsNullable)
-                                {
-                                    newRow.Set<short?>(col.Name, null);
-                                }
-                                else
-                                {
-                                    newRow.Set<short>(col.Name, 0);
-                                }
-                            }
-                        }
-                        break;
-                    case ColumnKind.Int:
-                        {
-                            if (col.IsUnsigned)
-                            {
-                                if (col.IsNullable)
-                                {
-                                    newRow.Set<uint?>(col.Name, null);
-                                }
-                                else
-                                {
-                                    newRow.Set<uint>(col.Name, 0);
-                                }
-                            }
-                            else
-                            {
-                                if (col.IsNullable)
-                                {
-                                    newRow.Set<int?>(col.Name, null);
-                                }
-                                else
-                                {
-                                    newRow.Set<int>(col.Name, 0);
-                                }
-                            }
-                        }
-                        break;
-                    case ColumnKind.Float:
-                        {
-                            if (col.IsNullable)
-                            {
-                                newRow.Set<float?>(col.Name, null);
-                            }
-                            else
-                            {
-                                newRow.Set<float>(col.Name, 0f);
-                            }
-                        }
-                        break;
-                    case ColumnKind.Double:
-                        {
-                            if (col.IsNullable)
-                            {
-                                newRow.Set<double?>(col.Name, null);
-                            }
-                            else
-                            {
-                                newRow.Set<double>(col.Name, 0);
-                            }
-                        }
-                        break;
-                    case ColumnKind.Bool:
-                        {
-                            if (col.IsNullable)
-                            {
-                                newRow.Set<bool?>(col.Name, null);
-                            }
-                            else
-                            {
-                                newRow.Set<bool>(col.Name, false);
-                            }
-                        }
-                        break;
-                    case ColumnKind.String:
-                        {
-                            if (col.IsNullable)
-                            {
-                                newRow.Set<string?>(col.Name, null);
-                            }
-                            else
-                            {
-                                newRow.Set<string>(col.Name, string.Empty);
-                            }
-                        }
-                        break;
-                    default:
-                        newRow.Set(col.Name, string.Empty);
-                        break;
-                }
-            }
-
             Rows.Add(new GenericRowViewModel(newRow));
         }
 
@@ -383,20 +255,34 @@ namespace GatiDataTable.Editor
             {
                 case ColumnKind.Int:
                     if (int.TryParse(text, out var i))
+                    {
                         return i;
+                    }
                     return 0;
 
                 case ColumnKind.Float:
                     if (float.TryParse(text, out var f))
+                    {
                         return f;
+                    }
                     return 0f;
 
                 case ColumnKind.Bool:
                     if (bool.TryParse(text, out var b))
+                    {
                         return b;
+                    }
+
                     // "0", "1" 같은 케이스를 처리하고 싶다면:
-                    if (text == "0") return false;
-                    if (text == "1") return true;
+                    if (text == "0")
+                    {
+                        return false;
+                    }
+                    if (text == "1")
+                    {
+                        return true;
+                    }
+
                     return false;
 
                 case ColumnKind.String:
@@ -420,6 +306,64 @@ namespace GatiDataTable.Editor
             //dlg.ShowDialog();
 
             BuildColumns(table.Schema);
+        }
+
+        private void OnAddTableClick(object sender, RoutedEventArgs e)
+        {
+            var dlg = new AddTableDialog(Tables)
+            {
+                Owner = this
+            };
+
+            if (dlg.ShowDialog() == true)
+            {
+                string name = dlg.TableName;
+
+                var schema = new DataTableSchema(name);
+                var table = new DataTableModel(schema);
+                var entry = new DataTableEntry(table);
+                Tables.Add(entry);
+
+                SelectedTable = entry;
+            }
+        }
+
+        private void OnDeleteTableClick(object sender, RoutedEventArgs e)
+        {
+            if (SelectedTable is null)
+            {
+                return;
+            }
+
+            if (MessageBox.Show(this,
+                    $"테이블 '{SelectedTable.Name}'을(를) 정말 삭제할까요?\n해당 테이블의 모든 데이터도 삭제됩니다.",
+                    "테이블 삭제 확인",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning) != MessageBoxResult.Yes)
+            {
+                return;
+            }
+
+            var toRemove = SelectedTable;
+            int idx = Tables.IndexOf(toRemove);
+
+            Tables.Remove(toRemove);
+
+            // 삭제 후 선택 상태 갱신
+            if (Tables.Count == 0)
+            {
+                SelectedTable = null;
+                Rows = new ObservableCollection<GenericRowViewModel>();
+                DataGrid.Columns.Clear();
+            }
+            else
+            {
+                if (idx >= Tables.Count)
+                {
+                    idx = Tables.Count - 1;
+                }
+                SelectedTable = Tables[idx];
+            }
         }
     }
 }
