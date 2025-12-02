@@ -94,5 +94,15 @@ namespace GatiDataTable.Core
 
             Name = name;
         }
+
+        public void ClearColumnsForLoad()
+        {
+            throw new NotImplementedException();
+        }
+
+        internal void AddColumnFromDefinition(ColumnDefinition columnDefinition)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
